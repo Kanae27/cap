@@ -30,7 +30,7 @@ include('./header.php');
                   <div class="x_panel">
                     <div class="x_title">
                       <h2>Purchase List</h2>
-                      
+                      <button id="myBtn" class="btn btn-primary">Add New Item</button>
                       <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
@@ -167,10 +167,12 @@ reader.onloadend = () => {
 reader.readAsDataURL(file);});
 				</script>
                       <div class="form-group row">
-                        <label class="control-label col-md-3 col-sm-3 col-xs-3">Catergory</label>
+                        <label class="control-label col-md-3 col-sm-3 col-xs-3">Category</label>
                         <div class="col-md-9 col-sm-9 col-xs-9">
-						<select class="form-control" name="category">
-			
+							<select class="form-control" name="category">
+								<option></option>
+								<!-- Add your category options here -->
+							</select>
                         </div>
                       </div>
                       <div class="form-group row">
