@@ -3,8 +3,8 @@ session_start();
 include('../connect.php');
 
 // Get customer details
-$user = $_GET['customer'] ?? '';
-$username = $_SESSION['username'] ?? '';
+$user = $_SESSION['user'] ?? '';
+$username = $_SESSION['user'] ?? '';
 $invoice = $_GET['invoice'] ?? '';
 
 // Get customer info

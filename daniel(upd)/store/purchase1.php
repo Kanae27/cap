@@ -1,19 +1,22 @@
-
 <?php
 include('../connect.php');
 session_start();
-$username =$_SESSION['username'];
-$name =$_SESSION['name1'];
-$address =$_SESSION['address1'];
-$contact =$_SESSION['contact1'];
-$invoice =$_SESSION['invoice1'];
+$name = $_SESSION['name1'];
+$address = $_SESSION['address1'];
+$contact = $_SESSION['contact1'];
+$invoice = $_SESSION['invoice1'];
 
+// Update only the cart items for this specific invoice, excluding POS entries
+$result = $conn->query("UPDATE cart SET 
+    name = '$name',
+    address = '$address',
+    contact = '$contact',
+    invoice = '$invoice',
+    status = 'Approved'
+    WHERE invoice = '$invoice' 
+    AND status = 'Pending'
+    AND type != 'POS'");  // Exclude POS entries from being updated
 
-$result = $conn->query("UPDATE cart SET name = '$name' WHERE username = '$username' AND status = 'Pending'");
-$result = $conn->query("UPDATE cart SET address = '$address' WHERE username = '$username' AND status = 'Pending'");
-$result = $conn->query("UPDATE cart SET contact = '$contact' WHERE username = '$username' AND status = 'Pending'");
-$result = $conn->query("UPDATE cart SET invoice = '$invoice' WHERE username = '$username' AND status = 'Pending'");
-$result = $conn->query("UPDATE cart SET status = 'Approved' WHERE username = '$username' AND status = 'Pending'");
 ?>
 <script>
 alert("Items has been purchased");

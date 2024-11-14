@@ -140,6 +140,7 @@ $pending_count = $conn->query("
     </div>
   </div>
 </div>
+
 <br>
 <hr>
 <div id="con" style="border:0px solid #000;width:100%;height:700px" ></div>
@@ -258,27 +259,100 @@ function checkNotifications() {
     });
 }
 
-// Check notifications on page load and every 30 seconds
+// Remove existing jQuery and Bootstrap includes and keep only one copy at the top
 $(document).ready(function() {
+    // Initialize notifications
     checkNotifications();
     setInterval(checkNotifications, 30000);
     
     // Add hover effect to bell
     $('.notification-bell').hover(
-        function() {
-            $(this).find('.fa-bell').css('transform', 'scale(1.1)');
-        },
-        function() {
-            $(this).find('.fa-bell').css('transform', 'scale(1)');
-        }
+        function() { $(this).find('.fa-bell').css('transform', 'scale(1.1)'); },
+        function() { $(this).find('.fa-bell').css('transform', 'scale(1)'); }
     );
     
-    // Add click effect
-    $('.notification-bell').on('click', function() {
-        $(this).find('.fa-bell').css('transform', 'scale(0.9)');
-        setTimeout(() => {
-            $(this).find('.fa-bell').css('transform', 'scale(1)');
-        }, 100);
+    // Initialize delivery tracking functionality
+    initializeDeliveryTracking();
+});
+
+function initializeDeliveryTracking() {
+    // Handle status updates
+    $('.dropdown-item').on('click', function(e) {
+        e.preventDefault();
+        const invoice = $(this).data('invoice');
+        const newStatus = $(this).data('status');
+        updateOrderStatus(invoice, newStatus);
+    });
+}
+
+function updateOrderStatus(invoice, newStatus) {
+    if (confirm('Are you sure you want to update this order to ' + newStatus + '?')) {
+        $.ajax({
+            url: 'update_order_status.php',
+            type: 'POST',
+            data: {
+                invoice: invoice,
+                status: newStatus
+            },
+            success: function(response) {
+                console.log('Response:', response);
+                try {
+                    var result = JSON.parse(response);
+                    if (result.success) {
+                        alert('Status updated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (e) {
+                    console.error('Error parsing response:', e);
+                    alert('Error processing response');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', error);
+                alert('Error communicating with server');
+            }
+        });
+    }
+}
+
+function updateStatus(invoice, status) {
+    if (confirm('Are you sure you want to mark this order as ' + status + '?')) {
+        $.ajax({
+            url: 'update_order_status.php',
+            type: 'POST',
+            data: {
+                invoice: invoice,
+                status: status
+            },
+            success: function(response) {
+                console.log('Response:', response);
+                try {
+                    if (response.success) {
+                        alert('Order status updated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (response.message || 'Unknown error'));
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                    alert('Error processing response');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                alert('Error updating order status');
+            }
+        });
+    }
+}
+
+// Initialize DataTable
+$(document).ready(function() {
+    $('#deliveryTable').DataTable({
+        "order": [[4, "desc"]], // Sort by order date by default
+        "pageLength": 10
     });
 });
 </script>      
