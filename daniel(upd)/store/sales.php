@@ -247,96 +247,120 @@
             <tbody>
                 <?php
                 $conn = mysqli_connect("localhost", "root", "", "daniel");
-                // Purchase list query - separate queries and combine results
-                $cart_purchases = $conn->query("
-                    SELECT DISTINCT 
-                        invoice,
-                        timestamp,
-                        name,
-                        contact,
-                        address,
-                        'cart' as source
-                    FROM cart 
-                    ORDER BY timestamp DESC
-                ");
+                // First, let's check if we have any data
+                $check_query = "SELECT COUNT(*) as count FROM cart_items";
+                $check_result = $conn->query($check_query);
+                $count = $check_result->fetch_assoc()['count'];
+                echo "<!-- Debug: Found {$count} records in cart_items -->"; // Debug line
 
-                $cart_items_purchases = $conn->query("
-                    SELECT DISTINCT 
-                        invoice,
-                        timestamp,
-                        name,
-                        contact,
-                        address,
+                // Debug: Show both table structures
+                echo "<!-- cart_items Table Structure: -->";
+                $table_info = $conn->query("DESCRIBE cart_items");
+                while($row = $table_info->fetch_assoc()) {
+                    echo "<!-- Field: {$row['Field']}, Type: {$row['Type']} -->";
+                }
+
+                echo "<!-- cart Table Structure: -->";
+                $table_info = $conn->query("DESCRIBE cart");
+                while($row = $table_info->fetch_assoc()) {
+                    echo "<!-- Field: {$row['Field']}, Type: {$row['Type']} -->";
+                }
+
+                // Updated purchase list query for both tables
+                $purchase_query = "
+                    (SELECT DISTINCT 
+                        ci.invoice,
+                        ci.username as name,
+                        NULL as contact,
+                        NULL as address,
+                        ci.timestamp,
+                        ci.status,
                         'cart_items' as source
-                    FROM cart_items 
+                    FROM cart_items ci
+                    WHERE ci.invoice IS NOT NULL)
+                    
+                    UNION ALL
+                    
+                    (SELECT DISTINCT 
+                        c.invoice,
+                        c.name,
+                        c.contact,
+                        c.address,
+                        c.timestamp,
+                        c.status,
+                        'cart' as source
+                    FROM cart c
+                    WHERE c.status = 'Approved')
+                    
                     ORDER BY timestamp DESC
-                ");
+                ";
 
-                // Combine and display results
-                if ($cart_purchases) {
-                    while ($row = $cart_purchases->fetch_assoc()) {
-                        displayPurchaseRow($conn, $row);
-                    }
-                }
+                $purchases_result = $conn->query($purchase_query);
 
-                if ($cart_items_purchases) {
-                    while ($row = $cart_items_purchases->fetch_assoc()) {
-                        displayPurchaseRow($conn, $row);
-                    }
-                }
-
-                // Helper function to display purchase row
-                function displayPurchaseRow($conn, $details) {
-                    $invoice = $details['invoice'];
-                    $source = $details['source'];
-                    
-                    echo '<tr>';
-                    echo '<td>' . htmlspecialchars($invoice) . '</td>';
-                    echo '<td>' . htmlspecialchars($details['name'] ?? '') . '</td>';
-                    echo '<td>' . htmlspecialchars($details['contact'] ?? '') . '</td>';
-                    echo '<td>' . htmlspecialchars($details['address'] ?? '') . '</td>';
-                    
-                    // Get items
-                    echo '<td><ul class="list-unstyled">';
-                    if ($source == 'cart') {
-                        $items_query = "
-                            SELECT c.quantity, p.item, p.price, p.type_quantity
-                            FROM cart c
-                            JOIN product p ON c.product = p.id
-                            WHERE c.invoice = '$invoice'
-                        ";
-                    } else {
-                        $items_query = "
-                            SELECT c.quantity, p.item, p.price, p.type_quantity
-                            FROM cart_items c
-                            JOIN product p ON c.product_id = p.id
-                            WHERE c.invoice = '$invoice'
-                        ";
-                    }
-                    
-                    $items_result = $conn->query($items_query);
-                    $total = 0;
-                    
-                    if ($items_result) {
-                        while ($item = $items_result->fetch_assoc()) {
-                            $quantity = $item['quantity'];
-                            $subtotal = $quantity * $item['price'];
-                            $total += $subtotal;
-                            
-                            echo '<li>' . 
-                                 htmlspecialchars($item['item']) . ' × ' . 
-                                 $quantity . ' ' . 
-                                 htmlspecialchars($item['type_quantity'] ?? 'pcs') . 
-                                 ' (₱' . number_format($item['price'], 2) . ' each)' .
-                                 '</li>';
+                if (!$purchases_result) {
+                    echo "Query error: " . $conn->error;
+                } else {
+                    while ($row = $purchases_result->fetch_assoc()) {
+                        $invoice = $row['invoice'];
+                        $source = $row['source'];
+                        
+                        echo '<tr>';
+                        echo '<td>' . htmlspecialchars($invoice) . '</td>';
+                        echo '<td>' . htmlspecialchars($row['name'] ?? '') . '</td>';
+                        echo '<td>' . htmlspecialchars($row['contact'] ?? 'N/A') . '</td>';
+                        echo '<td>' . htmlspecialchars($row['address'] ?? 'N/A') . '</td>';
+                        
+                        // Get items based on source
+                        echo '<td><ul class="list-unstyled">';
+                        if ($source == 'cart_items') {
+                            $items_query = "
+                                SELECT ci.quantity, p.item, p.price, p.type_quantity
+                                FROM cart_items ci
+                                JOIN product p ON ci.product_id = p.id
+                                WHERE ci.invoice = ?
+                            ";
+                        } else {
+                            $items_query = "
+                                SELECT c.quantity, p.item, p.price, p.type_quantity
+                                FROM cart c
+                                JOIN product p ON c.product = p.id
+                                WHERE c.invoice = ?
+                            ";
                         }
+                        
+                        $stmt = $conn->prepare($items_query);
+                        $stmt->bind_param('s', $invoice);
+                        $stmt->execute();
+                        $items_result = $stmt->get_result();
+                        
+                        $total = 0;
+                        
+                        if ($items_result) {
+                            while ($item = $items_result->fetch_assoc()) {
+                                $quantity = $item['quantity'];
+                                $subtotal = $quantity * $item['price'];
+                                $total += $subtotal;
+                                
+                                echo '<li>' . 
+                                     htmlspecialchars($item['item']) . ' × ' . 
+                                     $quantity . ' ' . 
+                                     htmlspecialchars($item['type_quantity'] ?? 'pcs') . 
+                                     ' (₱' . number_format($item['price'], 2) . ' each)' .
+                                     '</li>';
+                            }
+                        }
+                        echo '</ul></td>';
+                        
+                        echo '<td>₱' . number_format($total, 2) . '</td>';
+                        echo '<td>' . date('F d, Y', strtotime($row['timestamp'])) . '</td>';
+                        echo '</tr>';
                     }
-                    echo '</ul></td>';
-                    
-                    echo '<td>₱' . number_format($total, 2) . '</td>';
-                    echo '<td>' . date('F d, Y', strtotime($details['timestamp'])) . '</td>';
-                    echo '</tr>';
                 }
+
+                // Add debug counts
+                $count_cart = $conn->query("SELECT COUNT(*) as count FROM cart WHERE status = 'Approved'")->fetch_assoc()['count'];
+                $count_cart_items = $conn->query("SELECT COUNT(*) as count FROM cart_items WHERE invoice IS NOT NULL")->fetch_assoc()['count'];
+                echo "<!-- Debug: Found {$count_cart} records in cart and {$count_cart_items} records in cart_items -->";
                 ?>
             </tbody>
         </table>

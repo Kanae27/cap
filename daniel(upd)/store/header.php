@@ -147,7 +147,7 @@ $username =$_SESSION['username'];
                   <li><a href="index.php" style="border-bottom:1px solid #FFF"><i class="fa fa-home"></i> Dashboard </a></li>
                   <li><a href="product.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-list"  style="font-size:20px"></i> &nbsp;Product List</a></li>
                   <li><a href="sale.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-list"  style="font-size:20px"></i> &nbsp;Sales</a></li>
-                  <li><a href="pos_.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-bullseye-pointer" style="font-size:20px"></i> &nbsp;POS</a></li>
+                  <li><a href="pos_.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-bullseye-pointer" style="font-size:20px"></i> &nbsp;Purchased Order System</a></li>
                   <li><a href="sales.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-money-bill" style="font-size:20px"></i> &nbsp;Sales Report</a></li>
                   <li><a href="delivery_tracking.php" style="border-bottom:1px solid #FFF"><i class="fa fa-truck"></i> Delivery Tracking 
                     

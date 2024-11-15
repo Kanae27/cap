@@ -33,19 +33,20 @@ try {
             continue;
         }
 
-        // Insert into cart_items table
-        $sql = "INSERT INTO cart_items (product_id, username, status, quantity) 
-                VALUES (?, ?, 'cart', ?)";
+        // Insert into cart_items table with invoice
+        $sql = "INSERT INTO cart_items (product_id, username, status, quantity, invoice) 
+                VALUES (?, ?, 'cart', ?, ?)";
         
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("Error in prepare statement: " . $conn->error);
         }
 
-        $stmt->bind_param("isi", 
+        $stmt->bind_param("isis", 
             $product_id,
             $username,
-            $quantity
+            $quantity,
+            $invoice  // Add invoice number here
         );
 
         if (!$stmt->execute()) {
