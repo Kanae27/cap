@@ -137,19 +137,33 @@
                         $current_year = date('Y');
                         $months = array_fill(1, 12, 0); // Initialize with month numbers as keys
 
-                        // Monthly sales calculation
+                        // Monthly sales calculation - updated to include all transactions
                         $monthly_query = "
                             SELECT 
-                                MONTH(c.timestamp) as month,
-                                SUM(c.quantity * p.price) as total
+                                MONTH(timestamp) as month,
+                                SUM(total_amount) as total,
+                                COUNT(*) as transaction_count
                             FROM (
-                                SELECT product as product_id, quantity, timestamp FROM cart
+                                -- Get all sales from cart table
+                                SELECT 
+                                    c.timestamp,
+                                    (c.quantity * p.price) as total_amount
+                                FROM cart c
+                                JOIN product p ON c.product = p.id
+                                WHERE YEAR(c.timestamp) = $current_year
+                                
                                 UNION ALL
-                                SELECT product_id, quantity, timestamp FROM cart_items
-                            ) c
-                            JOIN product p ON c.product_id = p.id
-                            WHERE YEAR(c.timestamp) = $current_year
-                            GROUP BY MONTH(c.timestamp)
+                                
+                                -- Get all sales from cart_items table
+                                SELECT 
+                                    ci.timestamp,
+                                    (ci.quantity * p.price) as total_amount
+                                FROM cart_items ci
+                                JOIN product p ON ci.product_id = p.id
+                                WHERE ci.invoice IS NOT NULL
+                                AND YEAR(ci.timestamp) = $current_year
+                            ) combined_sales
+                            GROUP BY MONTH(timestamp)
                             ORDER BY month
                         ";
 
@@ -157,22 +171,17 @@
                         if ($result === false) {
                             error_log("Monthly query error: " . $conn->error);
                         } else {
+                            // Initialize all months with zero
+                            $months = array_fill(1, 12, 0);
+                            
+                            // Fill in the actual sales data
                             while($row = $result->fetch_assoc()) {
                                 $months[$row['month']] = floatval($row['total']);
                             }
                         }
 
-                        // Output monthly data for the graph
-                        echo "<table id='graphData' style='display:none'>";
-                        echo "<thead><tr><th>Month</th><th>Sales</th></tr></thead><tbody>";
-                        foreach($months as $month_num => $total) {
-                            $month_name = date('F', mktime(0, 0, 0, $month_num, 1));
-                            echo "<tr>";
-                            echo "<td>" . $month_name . "</td>";
-                            echo "<td>" . $total . "</td>";
-                            echo "</tr>";
-                        }
-                        echo "</tbody></table>";
+                        // Debug output
+                        echo "<!-- Monthly Sales Data: " . json_encode($months) . " -->";
                         ?>
                     </tbody>
                 </table>
@@ -184,16 +193,28 @@
             <div class="chart-container">
                 <div id="productPieChart" style="width:100%; height:400px"></div>
                 <?php
-                // Most purchased products for pie chart
+                // Most purchased products pie chart - updated to include all transactions
                 $pie_query = "
                     SELECT 
                         p.item as name,
                         SUM(c.quantity) as total_quantity,
                         SUM(c.quantity * p.price) as total_sales
                     FROM (
-                        SELECT product as product_id, quantity FROM cart
+                        -- Combine quantities from both tables
+                        SELECT 
+                            product as product_id, 
+                            quantity,
+                            'cart' as source 
+                        FROM cart
+                        
                         UNION ALL
-                        SELECT product_id, quantity FROM cart_items
+                        
+                        SELECT 
+                            product_id, 
+                            quantity,
+                            'cart_items' as source 
+                        FROM cart_items 
+                        WHERE invoice IS NOT NULL
                     ) c
                     JOIN product p ON c.product_id = p.id
                     GROUP BY p.id, p.item
@@ -230,7 +251,8 @@
     </div>
 
     <!-- Sales Table -->
-    <div class="table-container">
+   
+
         <h2>Purchase List</h2>
         <table id="salesTable" class="table table-striped">
             <thead>
@@ -239,6 +261,7 @@
                     <th>Name</th>
                     <th>Contact Number</th>
                     <th>Address</th>
+                    <th>Status</th>
                     <th>Item/Quantity</th>
                     <th>Total Price</th>
                     <th>Date Purchased</th>
@@ -247,11 +270,18 @@
             <tbody>
                 <?php
                 $conn = mysqli_connect("localhost", "root", "", "daniel");
-                // First, let's check if we have any data
-                $check_query = "SELECT COUNT(*) as count FROM cart_items";
-                $check_result = $conn->query($check_query);
-                $count = $check_result->fetch_assoc()['count'];
-                echo "<!-- Debug: Found {$count} records in cart_items -->"; // Debug line
+                // Check both cart_items and cart tables
+                $check_cart_items = "SELECT COUNT(*) as count FROM cart_items WHERE invoice IS NOT NULL";
+                $check_cart = "SELECT COUNT(*) as count FROM cart WHERE status = 'Delivered'";
+                
+                $cart_items_result = $conn->query($check_cart_items);
+                $cart_result = $conn->query($check_cart);
+                
+                $cart_items_count = $cart_items_result->fetch_assoc()['count'];
+                $cart_count = $cart_result->fetch_assoc()['count'];
+                
+                echo "<!-- Debug: Found {$cart_items_count} records in cart_items and {$cart_count} records in cart -->";
+                echo "<!-- Debug: Total records: " . ($cart_items_count + $cart_count) . " -->";
 
                 // Debug: Show both table structures
                 echo "<!-- cart_items Table Structure: -->";
@@ -266,7 +296,7 @@
                     echo "<!-- Field: {$row['Field']}, Type: {$row['Type']} -->";
                 }
 
-                // Updated purchase list query for both tables
+                // Updated purchase list query to show all items from both tables
                 $purchase_query = "
                     (SELECT DISTINCT 
                         ci.invoice,
@@ -289,8 +319,7 @@
                         c.timestamp,
                         c.status,
                         'cart' as source
-                    FROM cart c
-                    WHERE c.status = 'Approved')
+                    FROM cart c)
                     
                     ORDER BY timestamp DESC
                 ";
@@ -309,6 +338,7 @@
                         echo '<td>' . htmlspecialchars($row['name'] ?? '') . '</td>';
                         echo '<td>' . htmlspecialchars($row['contact'] ?? 'N/A') . '</td>';
                         echo '<td>' . htmlspecialchars($row['address'] ?? 'N/A') . '</td>';
+                        echo '<td>' . htmlspecialchars($row['status'] ?? 'N/A') . '</td>';
                         
                         // Get items based on source
                         echo '<td><ul class="list-unstyled">';
@@ -358,7 +388,7 @@
                 }
 
                 // Add debug counts
-                $count_cart = $conn->query("SELECT COUNT(*) as count FROM cart WHERE status = 'Approved'")->fetch_assoc()['count'];
+                $count_cart = $conn->query("SELECT COUNT(*) as count FROM cart WHERE status = 'Delivered'")->fetch_assoc()['count'];
                 $count_cart_items = $conn->query("SELECT COUNT(*) as count FROM cart_items WHERE invoice IS NOT NULL")->fetch_assoc()['count'];
                 echo "<!-- Debug: Found {$count_cart} records in cart and {$count_cart_items} records in cart_items -->";
                 ?>
@@ -415,7 +445,7 @@ Highcharts.chart('salesChart', {
         type: 'column'
     },
     title: {
-        text: 'Monthly Sales Report <?php echo $current_year; ?>'
+        text: 'Monthly Sales Report <?php echo $current_year; ?> (All Transactions)'
     },
     xAxis: {
         categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -439,7 +469,7 @@ Highcharts.chart('salesChart', {
         useHTML: true
     },
     series: [{
-        name: 'Monthly Sales',
+        name: 'Monthly Sales (All Transactions)',
         data: <?php echo json_encode(array_values($months)); ?>
     }]
 });
@@ -450,7 +480,7 @@ Highcharts.chart('productPieChart', {
         type: 'pie'
     },
     title: {
-        text: 'Most Purchased Products'
+        text: 'Most Purchased Products (All Transactions)'
     },
     tooltip: {
         pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>' +
