@@ -2,35 +2,40 @@
 session_start();
 include('../connect.php');
 
-header('Content-Type: application/json');
-
 try {
-    $username = $_SESSION['username'];
+    $cart_items = [];
     
-    $result = $conn->query("
-        SELECT c.*, p.item, p.price, p.quantity as max_quantity, p.id as product_id
-        FROM cart c 
-        JOIN product p ON c.product = p.id 
-        WHERE c.username = '$username' 
-        AND c.status = 'Pending'
-    ");
-    
-    $items = [];
-    while ($row = $result->fetch_assoc()) {
-        $items[] = $row;
+    // Assuming you store cart in session
+    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $product_id => $quantity) {
+            $stmt = $conn->prepare("SELECT id, item, price, quantity as max_quantity FROM product WHERE id = ?");
+            $stmt->bind_param("i", $product_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($row = $result->fetch_assoc()) {
+                $cart_items[] = [
+                    'product_id' => $product_id,
+                    'item' => $row['item'],
+                    'price' => floatval($row['price']),
+                    'quantity' => intval($quantity),
+                    'max_quantity' => intval($row['max_quantity'])
+                ];
+            }
+        }
     }
     
+    header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
-        'items' => $items
+        'items' => $cart_items
     ]);
-    
 } catch (Exception $e) {
+    header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => $e->getMessage(),
+        'items' => []
     ]);
 }
-
-$conn->close();
 ?> 

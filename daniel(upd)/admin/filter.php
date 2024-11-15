@@ -106,81 +106,105 @@ include('./header.php');
 					
 					include('../connect.php');
 					$total = 0;
-					$username =$_SESSION['username'];
-					//start
+					$username = $_SESSION['username'];
+
+					// Initialize $result1 with a default query
+					$result1 = $conn->query("SELECT DISTINCT invoice FROM cart ORDER BY timestamp DESC");
+
 					if(isset($_POST['by_date'])) {
 						$date = $_POST['date'];
-						$d = date('F d, Y',strtotime($date));
+						$d = date('F d, Y', strtotime($date));
 						echo '<h3>Sales Report for - '.$d.'</h3>';
-						$result1 = $conn->query("SELECT * FROM cart WHERE status = 'Approved' AND DATE(timestamp) = '$date'");
+						$result1 = $conn->query("
+							SELECT DISTINCT invoice 
+							FROM cart 
+							WHERE DATE(timestamp) = '$date'
+							ORDER BY timestamp DESC
+						");
 					}
+
 					if(isset($_POST['by_month'])) {
 						$start_date = $_POST['start_date'];
 						$end_date = $_POST['end_date'];
-						$s_m = date('m',strtotime($start_date));
-						$e_m = date('m',strtotime($end_date));
-						$s_y = date('Y',strtotime($start_date));
-						$e_y = date('Y',strtotime($end_date));
-						//echo $s_m;
-						$d1 = date('F, Y',strtotime($start_date));
-						$d2 = date('F, Y',strtotime($end_date));
+						$start_date_formatted = date('Y-m-01', strtotime($start_date));
+						$end_date_formatted = date('Y-m-t', strtotime($end_date));
+						
+						$d1 = date('F, Y', strtotime($start_date));
+						$d2 = date('F, Y', strtotime($end_date));
 						echo '<h3>Sales Report for - '.$d1.' - '.$d2.'</h3>';
-						$result1 = $conn->query("SELECT * FROM cart WHERE status = 'Approved' AND MONTH(timestamp) <= '$e_m' AND MONTH(timestamp) >= '$s_m' AND YEAR(timestamp) >= '$s_y' AND YEAR(timestamp) >= '$e_y'");
+						
+						$result1 = $conn->query("
+							SELECT DISTINCT invoice 
+							FROM cart 
+							WHERE timestamp >= '$start_date_formatted' 
+							AND timestamp <= '$end_date_formatted'
+							ORDER BY timestamp DESC
+						");
 					}
+
 					if(isset($_POST['by_year'])) {
 						$year = $_POST['year'];
 						echo '<h3>Sales Report for - '.$year.'</h3>';
-						$result1 = $conn->query("SELECT * FROM cart WHERE status = 'Approved' AND YEAR(timestamp) = '$year'");
+						$result1 = $conn->query("
+							SELECT DISTINCT invoice 
+							FROM cart 
+							WHERE YEAR(timestamp) = '$year'
+							ORDER BY timestamp DESC
+						");
 					}
-					
-					//end
- while($row1 = $result1->fetch_assoc()) {
-						  $product = $row1['product'];
-						  $date = $row1['timestamp'];
-						  $name = $row1['name'];
-						  $invoice = $row1['invoice'];
-						  $contact = $row1['contact'];
-						  $address = $row1['address'];
-						  echo '<tr>';
-                        echo '  <td>'.$invoice.'<span style="color:#FFF">a</span></td>';
-                        echo '  <td>'.$name.'</td>';
-                        echo '  <td>'.$contact.'</td>';
-                        echo '  <td>'.$address.'</td>';
-						echo '<td>';
-						//check item from invoice
+
+					// Display results
+					while($row1 = $result1->fetch_assoc()) {
 						$invoice = $row1['invoice'];
-						$t = 0;
-						$result1a = $conn->query("SELECT * FROM cart WHERE invoice = '$invoice'");
-						while($row1a = $result1a->fetch_assoc()) {
-						$prd = $row1a['product'];
-							$result = $conn->query("SELECT * FROM product WHERE id = '$prd' ");
-								while($row = $result->fetch_assoc()) {
-									$item =$row['item'];
-									$description =$row['description'];
-									$price = $row['price'];
-									$type_quantity =$row['type_quantity'];
-									$quantity = $row1['quantity'];
-									$p = $quantity * $price;
-									$date = date('F d, Y',strtotime($date));
-									echo '<li>'.$item.' - '.$quantity.' '.$type_quantity.'</li>';
-							}
-						 $t += $p;
-					  }
-					  echo '</td>';
-                       
-                       
-                        echo '  <td>'.number_format($t,2).'</td>';
-						//end check
-                        echo '  <td>'.$date.'</td>';
-                        echo '</tr>';
-						//echo $t;
-						if(isset($p)) {
-								$total += $p;
-						} else {
-						$total = 0;
+						
+						// Get the first row for this invoice to get customer details
+						$details_query = $conn->query("
+							SELECT * FROM cart 
+							WHERE invoice = '$invoice' 
+							LIMIT 1
+						");
+						$details = $details_query->fetch_assoc();
+						
+						echo '<tr>';
+						echo '<td>' . htmlspecialchars($invoice) . '</td>';
+						echo '<td>' . htmlspecialchars($details['name'] ?? '') . '</td>';
+						echo '<td>' . htmlspecialchars($details['contact'] ?? '') . '</td>';
+						echo '<td>' . htmlspecialchars($details['address'] ?? '') . '</td>';
+						
+						// Get items for this invoice
+						echo '<td><ul class="list-unstyled">';
+						$items_query = $conn->query("
+							SELECT c.*, p.item, p.price, p.type_quantity 
+							FROM cart c 
+							JOIN product p ON c.product = p.id 
+							WHERE c.invoice = '$invoice'
+						");
+						
+						$total_for_invoice = 0;
+						while($item = $items_query->fetch_assoc()) {
+							$quantity = $item['quantity'];
+							$subtotal = $quantity * $item['price'];
+							$total_for_invoice += $subtotal;
+							
+							echo '<li>' . htmlspecialchars($item['item']) . ' × ' . 
+								 $quantity . ' ' . 
+								 htmlspecialchars($item['type_quantity'] ?? 'pcs') . 
+								 ' (₱' . number_format($item['price'], 2) . ' each)</li>';
 						}
-					  }
-					  
+						echo '</ul></td>';
+						
+						echo '<td>₱' . number_format($total_for_invoice, 2) . '</td>';
+						echo '<td>' . date('F d, Y', strtotime($details['timestamp'])) . '</td>';
+						echo '</tr>';
+						
+						$total += $total_for_invoice;
+					}
+
+					// Display total at the bottom
+					echo '<tr class="table-info">';
+					echo '<td colspan="5" style="text-align: right;"><strong>Total:</strong></td>';
+					echo '<td colspan="2"><strong>₱' . number_format($total, 2) . '</strong></td>';
+					echo '</tr>';
 					?>
 					</table>
                       </div>

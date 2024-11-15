@@ -54,6 +54,16 @@
         margin-bottom: 15px;
     }
 }
+
+.list-unstyled {
+    margin-bottom: 0;
+}
+.list-unstyled li {
+    margin-bottom: 3px;
+}
+.list-unstyled li:last-child {
+    margin-bottom: 0;
+}
 </style>
 
 <!-- Main Content -->
@@ -123,31 +133,46 @@
                     </thead>
                     <tbody>
                         <?php
-                        // Initialize monthly variables
-                        $months = [
-                            'January' => 0, 'February' => 0, 'March' => 0,
-                            'April' => 0, 'May' => 0, 'June' => 0,
-                            'July' => 0, 'August' => 0, 'September' => 0,
-                            'October' => 0, 'November' => 0, 'December' => 0
-                        ];
+                        // Initialize monthly variables for current year
+                        $current_year = date('Y');
+                        $months = array_fill(1, 12, 0); // Initialize with month numbers as keys
 
-                        $result = $conn->query("SELECT cart.*, product.price 
-                                              FROM cart 
-                                              JOIN product ON cart.product = product.id 
-                                              WHERE cart.status = 'Approved'");
+                        // Monthly sales calculation
+                        $monthly_query = "
+                            SELECT 
+                                MONTH(c.timestamp) as month,
+                                SUM(c.quantity * p.price) as total
+                            FROM (
+                                SELECT product as product_id, quantity, timestamp FROM cart
+                                UNION ALL
+                                SELECT product_id, quantity, timestamp FROM cart_items
+                            ) c
+                            JOIN product p ON c.product_id = p.id
+                            WHERE YEAR(c.timestamp) = $current_year
+                            GROUP BY MONTH(c.timestamp)
+                            ORDER BY month
+                        ";
 
-                        while($row = $result->fetch_assoc()) {
-                            $month = date('F', strtotime($row['timestamp']));
-                            $total = $row['quantity'] * $row['price'];
-                            $months[$month] += $total;
+                        $result = $conn->query($monthly_query);
+                        if ($result === false) {
+                            error_log("Monthly query error: " . $conn->error);
+                        } else {
+                            while($row = $result->fetch_assoc()) {
+                                $months[$row['month']] = floatval($row['total']);
+                            }
                         }
 
-                        foreach($months as $month => $total) {
+                        // Output monthly data for the graph
+                        echo "<table id='graphData' style='display:none'>";
+                        echo "<thead><tr><th>Month</th><th>Sales</th></tr></thead><tbody>";
+                        foreach($months as $month_num => $total) {
+                            $month_name = date('F', mktime(0, 0, 0, $month_num, 1));
                             echo "<tr>";
-                            echo "<td>" . $month . "</td>";
+                            echo "<td>" . $month_name . "</td>";
                             echo "<td>" . $total . "</td>";
                             echo "</tr>";
                         }
+                        echo "</tbody></table>";
                         ?>
                     </tbody>
                 </table>
@@ -159,20 +184,44 @@
             <div class="chart-container">
                 <div id="productPieChart" style="width:100%; height:400px"></div>
                 <?php
-                $product_query = "SELECT p.item, SUM(c.quantity) as total_quantity 
-                                FROM cart c 
-                                JOIN product p ON c.product = p.id 
-                                WHERE c.status = 'Approved' 
-                                GROUP BY p.id 
-                                ORDER BY total_quantity DESC 
-                                LIMIT 5";
-                $product_result = $conn->query($product_query);
-                
+                // Most purchased products for pie chart
+                $pie_query = "
+                    SELECT 
+                        p.item as name,
+                        SUM(c.quantity) as total_quantity,
+                        SUM(c.quantity * p.price) as total_sales
+                    FROM (
+                        SELECT product as product_id, quantity FROM cart
+                        UNION ALL
+                        SELECT product_id, quantity FROM cart_items
+                    ) c
+                    JOIN product p ON c.product_id = p.id
+                    GROUP BY p.id, p.item
+                    ORDER BY total_quantity DESC
+                    LIMIT 5
+                ";
+
+                $pie_result = $conn->query($pie_query);
                 $pie_data = array();
-                while($row = $product_result->fetch_assoc()) {
+
+                if ($pie_result === false) {
+                    error_log("Pie chart query error: " . $conn->error);
+                } else {
+                    while($row = $pie_result->fetch_assoc()) {
+                        $pie_data[] = array(
+                            'name' => $row['name'],
+                            'y' => intval($row['total_quantity']),
+                            'sales' => number_format($row['total_sales'], 2)
+                        );
+                    }
+                }
+
+                // If no data, add dummy data to prevent JavaScript errors
+                if (empty($pie_data)) {
                     $pie_data[] = array(
-                        'name' => $row['item'],
-                        'y' => (int)$row['total_quantity']
+                        'name' => 'No Data',
+                        'y' => 0,
+                        'sales' => '0.00'
                     );
                 }
                 ?>
@@ -198,33 +247,94 @@
             <tbody>
                 <?php
                 $conn = mysqli_connect("localhost", "root", "", "daniel");
-                $result = $conn->query("SELECT * FROM cart WHERE status = 'Approved' GROUP BY invoice ORDER BY timestamp DESC");
-                
-                while ($row = $result->fetch_assoc()) {
-                    echo '<tr>';
-                    echo '<td>' . htmlspecialchars($row['invoice']) . '</td>';
-                    echo '<td>' . htmlspecialchars($row['name'] ?? '') . '</td>';
-                    echo '<td>' . htmlspecialchars($row['contact'] ?? '') . '</td>';
-                    echo '<td>' . htmlspecialchars($row['address'] ?? '') . '</td>';
+                // Purchase list query - separate queries and combine results
+                $cart_purchases = $conn->query("
+                    SELECT DISTINCT 
+                        invoice,
+                        timestamp,
+                        name,
+                        contact,
+                        address,
+                        'cart' as source
+                    FROM cart 
+                    ORDER BY timestamp DESC
+                ");
+
+                $cart_items_purchases = $conn->query("
+                    SELECT DISTINCT 
+                        invoice,
+                        timestamp,
+                        name,
+                        contact,
+                        address,
+                        'cart_items' as source
+                    FROM cart_items 
+                    ORDER BY timestamp DESC
+                ");
+
+                // Combine and display results
+                if ($cart_purchases) {
+                    while ($row = $cart_purchases->fetch_assoc()) {
+                        displayPurchaseRow($conn, $row);
+                    }
+                }
+
+                if ($cart_items_purchases) {
+                    while ($row = $cart_items_purchases->fetch_assoc()) {
+                        displayPurchaseRow($conn, $row);
+                    }
+                }
+
+                // Helper function to display purchase row
+                function displayPurchaseRow($conn, $details) {
+                    $invoice = $details['invoice'];
+                    $source = $details['source'];
                     
-                    // Items column
+                    echo '<tr>';
+                    echo '<td>' . htmlspecialchars($invoice) . '</td>';
+                    echo '<td>' . htmlspecialchars($details['name'] ?? '') . '</td>';
+                    echo '<td>' . htmlspecialchars($details['contact'] ?? '') . '</td>';
+                    echo '<td>' . htmlspecialchars($details['address'] ?? '') . '</td>';
+                    
+                    // Get items
                     echo '<td><ul class="list-unstyled">';
-                    $invoice = $row['invoice'];
-                    $items_query = $conn->query("SELECT c.*, p.item, p.price, p.type_quantity 
-                                               FROM cart c 
-                                               JOIN product p ON c.product = p.id 
-                                               WHERE c.invoice = '$invoice'");
+                    if ($source == 'cart') {
+                        $items_query = "
+                            SELECT c.quantity, p.item, p.price, p.type_quantity
+                            FROM cart c
+                            JOIN product p ON c.product = p.id
+                            WHERE c.invoice = '$invoice'
+                        ";
+                    } else {
+                        $items_query = "
+                            SELECT c.quantity, p.item, p.price, p.type_quantity
+                            FROM cart_items c
+                            JOIN product p ON c.product_id = p.id
+                            WHERE c.invoice = '$invoice'
+                        ";
+                    }
+                    
+                    $items_result = $conn->query($items_query);
                     $total = 0;
-                    while ($item = $items_query->fetch_assoc()) {
-                        $subtotal = $item['quantity'] * $item['price'];
-                        $total += $subtotal;
-                        echo '<li>' . htmlspecialchars($item['item']) . ' - ' . $item['quantity'] . ' ' . 
-                             htmlspecialchars($item['type_quantity'] ?? 'pcs') . '</li>';
+                    
+                    if ($items_result) {
+                        while ($item = $items_result->fetch_assoc()) {
+                            $quantity = $item['quantity'];
+                            $subtotal = $quantity * $item['price'];
+                            $total += $subtotal;
+                            
+                            echo '<li>' . 
+                                 htmlspecialchars($item['item']) . ' × ' . 
+                                 $quantity . ' ' . 
+                                 htmlspecialchars($item['type_quantity'] ?? 'pcs') . 
+                                 ' (₱' . number_format($item['price'], 2) . ' each)' .
+                                 '</li>';
+                        }
                     }
                     echo '</ul></td>';
                     
                     echo '<td>₱' . number_format($total, 2) . '</td>';
-                    echo '<td>' . date('F d, Y', strtotime($row['timestamp'])) . '</td>';
+                    echo '<td>' . date('F d, Y', strtotime($details['timestamp'])) . '</td>';
                     echo '</tr>';
                 }
                 ?>
@@ -277,14 +387,15 @@ $(document).ready(function() {
 
 // Monthly Sales Chart
 Highcharts.chart('salesChart', {
-    data: {
-        table: 'graphData'
-    },
     chart: {
         type: 'column'
     },
     title: {
-        text: 'Monthly Sales Report'
+        text: 'Monthly Sales Report <?php echo $current_year; ?>'
+    },
+    xAxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        crosshair: true
     },
     yAxis: {
         title: {
@@ -292,36 +403,35 @@ Highcharts.chart('salesChart', {
         },
         labels: {
             formatter: function() {
-                return '₱' + this.value.toLocaleString();
+                return '₱' + Highcharts.numberFormat(this.value, 2);
             }
         }
     },
     tooltip: {
-        formatter: function() {
-            return '<b>' + this.series.name + '</b><br/>' +
-                   this.point.name + ': ₱' + this.point.y.toLocaleString();
-        }
-    }
+        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+        pointFormat: '<tr><td style="padding:0"><b>₱{point.y:.2f}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    series: [{
+        name: 'Monthly Sales',
+        data: <?php echo json_encode(array_values($months)); ?>
+    }]
 });
 
 // Product Pie Chart
 Highcharts.chart('productPieChart', {
     chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
         type: 'pie'
     },
     title: {
         text: 'Most Purchased Products'
     },
     tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>Quantity: {point.y}'
-    },
-    accessibility: {
-        point: {
-            valueSuffix: '%'
-        }
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>' +
+                    'Quantity: {point.y}<br>' +
+                    'Total Sales: ₱{point.sales}'
     },
     plotOptions: {
         pie: {
@@ -329,7 +439,7 @@ Highcharts.chart('productPieChart', {
             cursor: 'pointer',
             dataLabels: {
                 enabled: true,
-                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                format: '<b>{point.name}</b>: {point.percentage:.1f}%'
             }
         }
     },
