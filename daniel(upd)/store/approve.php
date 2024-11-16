@@ -9,7 +9,7 @@ $username = $user;
 // Simple update query to approve the order
 $sql = "UPDATE cart SET 
         username = '$username', 
-        status = 'Approved' 
+        status = 'Processing' 
         WHERE invoice = '$invoice'";
 
 if($conn->query($sql)) {
