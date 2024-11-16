@@ -142,7 +142,7 @@ if(!isset($_SESSION['username'])) {
                                     SELECT COUNT(DISTINCT c.invoice) as total
                                     FROM cart c
                                     JOIN product p ON c.product = p.id
-                                    WHERE c.status = 'Approved' 
+                                    WHERE c.status = 'Approved' OR c.status = 'Processing'
                                     AND c.username != 'pos'
                                 ";
                                 $count_result = mysqli_query($conn, $count_query);
@@ -161,7 +161,7 @@ if(!isset($_SESSION['username'])) {
                                         MIN(date) as order_date
                                     FROM cart c
                                     JOIN product p ON c.product = p.id
-                                    WHERE c.status = 'Approved' 
+                                    WHERE (c.status = 'Approved' OR c.status = 'Processing')
                                     AND c.username != 'pos'
                                     GROUP BY c.invoice, c.username, c.status
                                     ORDER BY date DESC
