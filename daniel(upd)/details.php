@@ -12,11 +12,36 @@ while($row = $result->fetch_assoc()) {
 	
 }
 
-$r = mysqli_query($conn,"SELECT *, AVG(rating) as av FROM rating WHERE item = '$id'");
-$r2 = mysqli_query($conn,"SELECT * FROM rating WHERE item = '$id'");
-$s = mysqli_num_rows($r2);
-while($r1 = mysqli_fetch_array($r)) {
-	$rating = $r1['av'];
+$r = mysqli_query($conn, "SELECT *, AVG(rating) as av FROM rating WHERE item = '$id'");
+if (!$r) {
+    // Log the error for debugging
+    error_log("Rating query error: " . mysqli_error($conn));
+    // Set default values
+    $rating = 0;
+    $s = 0;
+} else {
+    $r1 = mysqli_fetch_assoc($r);
+    $rating = $r1 ? $r1['av'] : 0;
+}
+
+// Count number of reviews separately
+$r2 = mysqli_query($conn, "SELECT COUNT(*) as count FROM rating WHERE item = '$id'");
+if (!$r2) {
+    error_log("Review count query error: " . mysqli_error($conn));
+    $s = 0;
+} else {
+    $count_row = mysqli_fetch_assoc($r2);
+    $s = $count_row['count'];
+}
+
+// Debug output
+echo "<!-- Debug - Rating Query: SELECT *, AVG(rating) as av FROM rating WHERE item = '$id' -->";
+echo "<!-- Debug - Rating Result: " . ($rating ?? 'null') . " -->";
+echo "<!-- Debug - Review Count: " . $s . " -->";
+
+if(isset($_SESSION['username'])) {
+    // Debug line - you can remove after fixing
+    echo "<!-- Debug - Session data: " . print_r($_SESSION, true) . " -->";
 }
 ?>
 
@@ -481,11 +506,41 @@ textarea {
                                         </div>
                                         <div class="form-group">
                                             <label for="name">Your Name *</label>
-                                            <input type="text" class="form-control" id="name" name="name" required>
+                                            <input type="text" class="form-control" id="name" name="name" 
+                                                   value="<?php echo isset($_SESSION['username']) ? $_SESSION['username'] : ''; ?>" 
+                                                   required <?php echo isset($_SESSION['username']) ? 'readonly' : ''; ?>>
                                         </div>
                                         <div class="form-group">
                                             <label for="email">Your Email *</label>
-                                            <input type="email" class="form-control" id="email" name="email" required>
+                                            <?php
+                                            // Debug line
+                                            echo "<!-- Debug - Session data: " . print_r($_SESSION, true) . " -->";
+                                            ?>
+                                            <input type="email" class="form-control" id="email" name="email" 
+                                                   value="<?php 
+                                                        if(isset($_SESSION['email'])) {
+                                                            echo $_SESSION['email'];
+                                                        } else if(isset($_SESSION['username'])) {
+                                                            // Fetch email from database using username with error handling
+                                                            $username = mysqli_real_escape_string($conn, $_SESSION['username']);
+                                                            $email_query = mysqli_query($conn, "SELECT email FROM user WHERE username = '$username'");
+                                                            
+                                                            if($email_query === false) {
+                                                                error_log("Email query error: " . mysqli_error($conn));
+                                                                echo '';
+                                                            } else {
+                                                                $email_row = mysqli_fetch_assoc($email_query);
+                                                                if($email_row) {
+                                                                    $_SESSION['email'] = $email_row['email'];
+                                                                    echo $email_row['email'];
+                                                                } else {
+                                                                    error_log("No email found for username: $username");
+                                                                    echo '';
+                                                                }
+                                                            }
+                                                       }
+                                                   ?>" 
+                                                   required <?php echo (isset($_SESSION['email']) || isset($_SESSION['username'])) ? 'readonly' : ''; ?>>
                                         </div>
                                         <div class="form-group mb-0">
                                             <input type="submit" value="Leave Your Review" class="btn btn-primary px-3" name="submit">
