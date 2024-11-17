@@ -35,7 +35,7 @@ if (isset($_POST['mfa_code'])) {
         error_log("MFA codes do not match!");
         $error = "Invalid MFA code. Please try again.";
         // Add visible debug info
-        $error .= "<br>Submitted: " . $_POST['mfa_code'] . "<br>Expected: " . $_SESSION['mfa_code'];
+       
     }
 }
 ?>
