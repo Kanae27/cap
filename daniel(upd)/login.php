@@ -13,6 +13,40 @@ header('Access-Control-Allow-Origin: *');
 include "connect.php";
 include 'header.php';
 
+// Replace the existing require statements with:
+require 'vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Add the sendMfaCode function
+function sendMfaCode($email, $mfaCode) {
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'danielandmarilyn64@gmail.com';
+        $mail->Password = 'sfke dkqp ensv fzod';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->setFrom('danielandmarilyn64@gmail.com', 'Daniel and Marilyn General Merchandise');
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Your MFA Code';
+        $mail->Body = "Your multi-factor authentication code is: <strong>$mfaCode</strong>";
+        $mail->AltBody = "Your multi-factor authentication code is: $mfaCode";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+        return false;
+    }
+}
+
 if (isset($_POST['username']) && isset($_POST['password'])) {
     function validate($data){
        $data = trim($data);
@@ -29,33 +63,53 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     } else if(empty($password)) {
         echo '<script>alert("Password is required");window.location="login.php";</script>';
     } else {
-        $sql = "SELECT * FROM login WHERE username='$username'";
+        // Add debug statement to see current database
+        error_log("Current database: " . mysqli_select_db($conn, "your_database_name"));
+
+        // Modified query to join by ID and check email/password
+        $sql = "SELECT l.*, u.email 
+                FROM login l 
+                INNER JOIN user u ON l.id = u.id 
+                WHERE u.email='$username'";
+        
+        // Debug the exact SQL query
+        error_log("SQL Query: " . $sql);
+        
         $result = mysqli_query($conn, $sql);
+        
+        if (!$result) {
+            error_log("MySQL Error: " . mysqli_error($conn));
+            die("Query failed: " . mysqli_error($conn));
+        }
         
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
+            
+            // Debug the retrieved data
+            error_log("Retrieved data: " . print_r($row, true));
+            error_log("Stored password: " . $row['password']);
+            error_log("Submitted password: " . $password);
+            
             $password1 = $row['password'];
             $user = $row['username'];
             $type = $row['type'];
+            $email = $row['email']; // Now fetching email from users table
             
             if($password1 != $password) {
                 echo '<script>alert("Password is incorrect");window.location="login.php";</script>';
             } else {
-                $_SESSION['username'] = $user;
-                date_default_timezone_set('Asia/Manila');
-                $date = date('F d, Y h:i A');
+                // Generate MFA code
+                $mfaCode = sprintf("%06d", mt_rand(0, 999999));
+                $_SESSION['mfa_code'] = $mfaCode;
+                $_SESSION['temp_user'] = $user;
+                $_SESSION['temp_type'] = $type;
                 
-                if($type == 'admin') {
-                    $message = 'Admin account logged in';
-                    echo '<script>window.location="admin/index.php"</script>';
-                }
-                if($type == 'store') {
-                    $message = 'Admin account logged in';
-                    echo '<script>window.location="store/index.php"</script>';
-                }
-                if($type == 'user') {
-                    $message = 'Alumni account logged in';
-                    echo '<script>window.location="./index.php"</script>';
+                // Send MFA code via email
+                if (sendMfaCode($email, $mfaCode)) {
+                    // Redirect to MFA verification page
+                    echo '<script>window.location="verify_mfa.php";</script>';
+                } else {
+                    echo '<script>alert("Failed to send MFA code. Please try again.");window.location="login.php";</script>';
                 }
             }
         } else {
