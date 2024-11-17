@@ -116,9 +116,10 @@ if(isset($_POST['update_status'])) {
                                     <?php
                                     $progress = 0;
                                     switch($status) {
-                                        case 'Processing': $progress = 25; break;
-                                        case 'In Transit': $progress = 50; break;
-                                        case 'Out for Delivery': $progress = 75; break;
+                                        case 'Processing': $progress = 45; break;
+                                        case 'In Transit': $progress = 75; break;
+                                        case 'Ready to Pick Up': $progress = 85; break;
+                                        case 'Approved': $progress = 90; break;
                                         case 'Delivered': $progress = 100; break;
                                     }
                                     ?>

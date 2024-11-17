@@ -116,6 +116,30 @@ if(isset($_SESSION['username']))  {
 							if(payment == 'Online Payment') {
 								document.getElementById('pay').style.display = 'block';
 								document.getElementById('res').style.display = 'block';
+								document.getElementById('pay').innerHTML = `
+									<div class="card">
+										<div class="card-body">
+											<h5 class="card-title">PayMongo Payment</h5>
+											<div class="form-group">
+												<label>Card Number</label>
+												<input type="text" class="form-control" id="card_number" placeholder="4343434343434345">
+											</div>
+											<div class="row">
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>Expiry Date (MM/YY)</label>
+														<input type="text" class="form-control" id="card_expiry" placeholder="12/25">
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group">
+														<label>CVC</label>
+														<input type="text" class="form-control" id="card_cvc" placeholder="123">
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>`;
 							} else {
 								document.getElementById('res').style.display = 'none';
 								document.getElementById('pay').style.display = 'none'
@@ -124,14 +148,63 @@ if(isset($_SESSION['username']))  {
 							function a() {
 								var payment = document.getElementById('payment').value;
 								var transaction = document.getElementById('transaction').value;
+								
+								var total = <?php echo $total; ?>;
+								
+								if(total < 200) {
+									alert("Minimum order amount should be ₱200");
+									return false;
+								}
+								
 								if(payment == '' || transaction == '') {
 									alert("Please select type of Transaction");
 									return false;
 								} else if(transaction == '') {
 									alert("Please select type of payment");
 									return false;
+								} else if(payment == 'Online Payment') {
+									var card_number = document.getElementById('card_number').value;
+									var card_expiry = document.getElementById('card_expiry').value;
+									var card_cvc = document.getElementById('card_cvc').value;
+									
+									if(!card_number || !card_expiry || !card_cvc) {
+										alert("Please fill in all card details");
+										return false;
+									}
+									
+									$.ajax({
+										url: 'process_payment.php',
+										method: 'POST',
+										data: {
+											amount: total,
+											card_number: card_number,
+											card_expiry: card_expiry,
+											card_cvc: card_cvc
+										},
+										success: function(response) {
+											var result = JSON.parse(response);
+											if(result.success) {
+												$.ajax({
+													url: 'create_notification.php',
+													method: 'POST',
+													data: {
+														message: 'New order received!',
+														order_details: 'Transaction: ' + transaction + ', Payment: ' + payment
+													},
+													success: function(response) {
+														window.location='checkout.php?payment='+payment+'&transaction='+transaction;
+													}
+												});
+											} else {
+												alert("Payment failed: " + result.message);
+											}
+										},
+										error: function() {
+											alert("Payment processing failed. Please try again.");
+										}
+									});
+									return false;
 								} else {
-									// Add AJAX call to create notification
 									$.ajax({
 										url: 'create_notification.php',
 										method: 'POST',

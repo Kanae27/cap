@@ -54,9 +54,7 @@ if(isset($_SESSION['username']))  {
             <div class="col-lg-4">
                 <a href="index.php" class="text-decoration-none">
                     <div class="row">
-                        <div class="col-lg-2">
-                            <img src="./img/logo.PNG" style="width:100%;border:1px solid #d3d3d3">
-                        </div>
+                        
                         <div class="col-lg-10">
                             <span class="h3 text-uppercase text-primary px-2" style="color:#FCCD2A">Daniel and Marilyn's</span>
                             <span class="h3 text-uppercase text-dark px-2 ml-n1" style="color:#FCCD2A !important">General Merchandise</span>

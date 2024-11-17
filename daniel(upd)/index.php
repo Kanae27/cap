@@ -22,7 +22,7 @@ include('./header.php');
                                 <div class="p-3" style="max-width: 80%;">
                                     <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">General Merchandise</h1>
                                     <p class="mx-md-5 px-5 animate__animated animate__bounceIn">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="view_shop.php?id=Shirts">Shop Now</a>
+                                   
                                 </div>
                             </div>
                         </div>
@@ -32,7 +32,7 @@ include('./header.php');
                                 <div class="p-3" style="max-width: 700px;">
                                     <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">General Merchandise</h1>
                                     <p class="mx-md-5 px-5 animate__animated animate__bounceIn">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="view_shop.php?id=Shorts">Shop Now</a>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -42,7 +42,7 @@ include('./header.php');
                                 <div class="p-3" style="max-width: 700px;">
                                     <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">General Merchandise</h1>
                                     <p class="mx-md-5 px-5 animate__animated animate__bounceIn">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                                    <a class="btn btn-outline-light py-2 px-4 mt-3 animate__animated animate__fadeInUp" href="view_shop.php?id=Caps">Shop Now</a>
+                                   
                                 </div>
                             </div>
                         </div>
@@ -136,6 +136,169 @@ a.category-box:active {
         font-size: 0.9rem;
         color: #FFFFFF !important;
     }
+}
+
+/* Add these new styles */
+.product-item {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.product-img {
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+}
+
+.product-img img {
+    border-radius: 8px 8px 0 0;
+}
+
+/* Add these new styles */
+.container-fluid.pt-5.pb-3 {
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    margin: 0px;
+    padding: 0px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    margin-top: 10px;
+}
+
+/* Enhanced responsive styles */
+@media (max-width: 768px) {
+    /* Container adjustments */
+    .container-fluid.pt-5.pb-3 {
+        width: 96%;
+        padding: 12px;
+        margin: 10px auto;
+    }
+
+    /* Grid adjustments for products */
+    .row.px-xl-5 {
+        margin: 0 -5px;
+    }
+
+    .col-lg-2.col-md-4.col-sm-6.pb-1 {
+        padding: 0 5px;
+        width: 50%; /* Show 2 products per row on mobile */
+    }
+
+    /* Product card adjustments */
+    .product-item {
+        margin-bottom: 10px;
+    }
+
+    .product-item .text-center.py-4 {
+        padding: 10px !important;
+    }
+
+    /* Product title */
+    .product-item .h6 {
+        font-size: 0.8rem;
+        line-height: 1.2;
+        height: 2.4em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* Price adjustments */
+    .product-item h5 {
+        font-size: 0.9rem;
+        margin: 5px 0;
+    }
+
+    /* Rating stars */
+    .fa-star, .far.fa-star {
+        font-size: 0.8rem;
+    }
+
+    /* Action buttons */
+    .product-action {
+        opacity: 1; /* Always visible on mobile */
+    }
+
+    .product-action .btn {
+        padding: 6px;
+        font-size: 0.8rem;
+    }
+
+    /* Categories grid */
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+        padding: 0 8px;
+    }
+
+    .category-box {
+        min-height: 50px;
+        padding: 8px;
+    }
+
+    .category-title {
+        font-size: 0.8rem;
+    }
+
+    /* Section titles */
+    .section-title {
+        font-size: 1.1rem;
+        margin: 10px 0 15px 0;
+    }
+
+    .section-title span {
+        padding: 0 10px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 576px) {
+    .col-lg-2.col-md-4.col-sm-6.pb-1 {
+        width: 50%; /* Maintain 2 products per row */
+    }
+
+    .container-fluid.pt-5.pb-3 {
+        width: 98%;
+        padding: 8px;
+    }
+
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+}
+
+/* Ensure images maintain aspect ratio */
+.product-img {
+    position: relative;
+    padding-top: 100%; /* 1:1 Aspect ratio */
+    width: 100%;
+    overflow: hidden;
+}
+
+.product-img img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Add smooth loading for images */
+img {
+    transition: opacity 0.3s;
+}
+
+img[loading] {
+    opacity: 0;
+}
+
+img.loaded {
+    opacity: 1;
 }
 </style>
 
@@ -322,3 +485,16 @@ a.category-box:active {
 <?php
 include('./footer.php');
 ?>
+
+<!-- Add this JavaScript at the bottom of your file -->
+<script>
+// Add smooth image loading
+document.addEventListener('DOMContentLoaded', function() {
+    const images = document.querySelectorAll('img[loading="lazy"]');
+    images.forEach(img => {
+        img.addEventListener('load', function() {
+            img.classList.add('loaded');
+        });
+    });
+});
+</script>

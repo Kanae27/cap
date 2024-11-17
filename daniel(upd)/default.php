@@ -21,6 +21,9 @@
                 height: 100vh;
                 min-height: 675px;
                 background-color: #F4F5FF;
+                overflow-x: hidden;
+                padding: 20px;
+                box-sizing: border-box;
             }
             p {
                 width: 100%;
@@ -55,6 +58,8 @@
                 justify-content: center;
                 width: 100%;
                 height: 100%;
+                padding: 0 20px;
+                box-sizing: border-box;
             }
             .ic-launch  {
                 margin-left: 10.5px;
@@ -83,6 +88,7 @@
                 max-width: 650px;
                 max-height: 406px;
                 height: auto;
+                object-fit: contain;
             }
             .navigation {
                 width: 100%;
@@ -95,18 +101,51 @@
                 justify-content: center;
                 background-color: #36344D;
             }
-            @media screen and (max-width: 580px) and (min-width: 0px) {
-                h1, p, .link-container {
-                    width: 80%;
+            @media screen and (max-width: 768px) {
+                h1 {
+                    font-size: 20px;
+                    text-align: center;
+                    margin: 15px 0;
+                }
+                
+                p {
+                    font-size: 14px;
+                    padding: 0 15px;
+                }
+
+                .link-container {
+                    margin: 20px 0;
+                    width: 90%;
+                }
+
+                .link {
+                    font-size: 13px;
+                    text-align: center;
+                    padding: 10px;
+                    flex-wrap: wrap;
+                }
+
+                .navigation {
+                    height: 60px;
                 }
             }
-            @media screen and (min-width: 650px) and (min-height: 0px) and (max-height: 750px) {
-                .link-container {
-                    margin-top: 12px;
+            @media screen and (max-width: 480px) {
+                body {
+                    min-height: auto;
+                    height: auto;
+                    padding: 10px;
                 }
+
+                .main-image {
+                    max-height: 300px;
+                }
+
                 h1 {
-                    margin-top: 0px;
-                    margin-bottom: 0px;
+                    font-size: 18px;
+                }
+
+                .link-container {
+                    width: 95%;
                 }
             }
         </style>

@@ -1,4 +1,7 @@
-<?php include('./header.php'); ?>
+<?php
+
+include('./header.php');
+?>
 
 <!-- CSS Dependencies -->
 <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
@@ -68,6 +71,30 @@
 
 <!-- Main Content -->
 <div class="right_col" role="main">
+    <!-- Add User Info Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><strong>Your Name *</strong></label>
+                                <input type="text" class="form-control" value="<?php echo $_SESSION['name'] ?? ''; ?>" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><strong>Your Email *</strong></label>
+                                <input type="email" class="form-control" value="<?php echo $_SESSION['email'] ?? ''; ?>" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filter Section -->
     <div class="row">
         <div class="col-md-4">

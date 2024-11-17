@@ -142,7 +142,7 @@ if(!isset($_SESSION['username'])) {
                                     SELECT COUNT(DISTINCT c.invoice) as total
                                     FROM cart c
                                     JOIN product p ON c.product = p.id
-                                    WHERE c.status = 'Approved' OR c.status = 'Processing'
+                                    WHERE c.status != 'Processing' AND c.status != 'Approved'
                                     AND c.username != 'pos'
                                 ";
                                 $count_result = mysqli_query($conn, $count_query);
@@ -161,7 +161,7 @@ if(!isset($_SESSION['username'])) {
                                         MIN(date) as order_date
                                     FROM cart c
                                     JOIN product p ON c.product = p.id
-                                    WHERE (c.status = 'Approved' OR c.status = 'Processing')
+                                    WHERE c.status != 'Delivered'
                                     AND c.username != 'pos'
                                     GROUP BY c.invoice, c.username, c.status
                                     ORDER BY date DESC
@@ -187,15 +187,35 @@ if(!isset($_SESSION['username'])) {
                                             <td>₱<?php echo number_format($row['total_amount'], 2); ?></td>
                                             <td><?php echo date('M d, Y h:i A', strtotime($row['order_date'])); ?></td>
                                             <td>
-                                                <span class="badge badge-<?php echo $row['status'] === 'Approved' ? 'primary' : 'success'; ?>">
+                                                <span class="badge badge-<?php echo $row['status'] === 'Processing' ? 'primary' : 'success'; ?>">
                                                     <?php echo $row['status']; ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <button onclick="updateStatus('<?php echo $row['invoice']; ?>', 'Delivered')" 
-                                                        class="btn btn-success btn-sm">
-                                                    <i class="fa fa-check"></i> Mark as Delivered
-                                                </button>
+                                                <select onchange="updateStatus('<?php echo $row['invoice']; ?>', this.value)" 
+                                                        class="form-control form-control-sm" style="width: auto;">
+                                                    <option value="" disabled selected>Change Status</option>
+                                                    <?php
+                                                    // Define the status flow
+                                                    $statusFlow = [
+                                                        'Processing' => ['In Transit'],
+                                                        'In Transit' => ['Ready to Pick Up'],
+                                                        'Ready to Pick Up' => ['Approved'],
+                                                        'Approved' => ['Delivered']
+                                                    ];
+                                                    
+                                                    // Get the next possible status(es)
+                                                    $nextStatuses = isset($statusFlow[$row['status']]) ? $statusFlow[$row['status']] : [];
+                                                    
+                                                    // Always show current status
+                                                    echo '<option value="'.$row['status'].'" selected>'.$row['status'].'</option>';
+                                                    
+                                                    // Show only the next possible status(es)
+                                                    foreach ($nextStatuses as $nextStatus) {
+                                                        echo '<option value="'.$nextStatus.'">'.$nextStatus.'</option>';
+                                                    }
+                                                    ?>
+                                                </select>
                                             </td>
                                         </tr>
                                         <?php
@@ -254,7 +274,7 @@ if(!isset($_SESSION['username'])) {
 <!-- Add this before closing body tag -->
 <script>
 function updateStatus(invoice, status) {
-    if (confirm('Are you sure you want to mark this order as ' + status + '?')) {
+    if (confirm('Are you sure you want to change this order status to ' + status + '?')) {
         $.ajax({
             url: 'update_order_status.php',
             type: 'POST',
@@ -471,5 +491,27 @@ $(document).ready(function() {
     vertical-align: middle;
     padding: 12px 8px;
 }
+</style>
+
+<style>
+/* Status dropdown styling */
+.form-control-sm {
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+select.form-control-sm {
+    padding-right: 1.5rem;
+}
+
+/* Optional: Style different status options with colors */
+select.form-control-sm option[value="Processing"] { color: #ffc107; }
+select.form-control-sm option[value="In Transit"] { color: #17a2b8; }
+select.form-control-sm option[value="Ready to Pick Up"] { color: #6610f2; }
+select.form-control-sm option[value="Approved"] { color: #28a745; }
+select.form-control-sm option[value="Delivered"] { color: #007bff; }
 </style>
 
