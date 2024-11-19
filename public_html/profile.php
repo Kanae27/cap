@@ -74,6 +74,25 @@ if (isset($_POST['submit_image'])) {
     <div class="row px-xl-5">
         <div class="col-lg-12 col-md-8">
             <div class="row" style="color:#000">
+                <!-- Profile Image Display -->
+                <div class="col-md-5">
+                    <div style="background:#FFF;padding:20px;border:1px solid #d4d4d4;margin-bottom:10px">
+                        <h3>Profile Picture</h3>
+                        <div class="text-center">
+                            <img id="profileImage" src="./uploads/<?php echo htmlspecialchars($user['image'] ?: 'default.jpg'); ?>" 
+                                 alt="Profile Picture" class="img-fluid rounded-circle mb-3" 
+                                 style="max-width: 200px; height: 200px; object-fit: cover;">
+                        </div>
+                        <form action="#" method="POST" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="image">Update Profile Picture</label>
+                                <input type="file" class="form-control" id="image" name="image" required onchange="previewImage(event)">
+                            </div>
+                            <button type="submit" class="btn btn-primary" name="submit_image">Update Image</button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Profile Information Form -->
                 <div class="col-md-7">
                     <div style="background:#FFF;padding:20px;border:1px solid #d4d4d4;margin-bottom:10px">
@@ -118,25 +137,12 @@ if (isset($_POST['submit_image'])) {
                             <button type="submit" class="btn btn-primary" name="submit_password">Update Password</button>
                         </form>
                     </div>
-
-                    <!-- Profile Image Form -->
-                    <div style="background:#FFF;padding:20px;border:1px solid #d4d4d4;margin-bottom:10px">
-                        <form action="#" method="POST" enctype="multipart/form-data">
-                            <h3>Profile Image</h3>
-                            <div class="form-group">
-                                <label for="image">Select Image</label>
-                                <input type="file" class="form-control" id="image" name="image" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary" name="submit_image">Update Image</button>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-            
-					
+
 <script>
     function previewImage(event) {
         var reader = new FileReader();
@@ -147,13 +153,7 @@ if (isset($_POST['submit_image'])) {
         reader.readAsDataURL(event.target.files[0]);
     }
 </script>
-					
-                </div>
-            </div>
-            <!-- Shop Product End -->
-        </div>
-    </div>
-    <!-- Shop End -->
+
 <br>
 <br>
 <br>

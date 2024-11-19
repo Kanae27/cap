@@ -57,7 +57,7 @@ if(isset($_SESSION['username']))  {
                     <div class="row">
                         
                         <div class="col-lg-10">
-                            <span class="h3 text-uppercase text-dark px-2" style="color:#FCCD2A">Daniel and Marilyn's</span>
+                            <span class="h3 text-uppercase text-white px-2" style="color:#FFFFFF">Daniel and Marilyn's</span>
                             <span class="h3 text-uppercase text-dark px-2" style="color:#FCCD2A !important">General Merchandise</span>
                         </div>
                     </div>

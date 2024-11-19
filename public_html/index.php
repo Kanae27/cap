@@ -56,8 +56,8 @@ include('./header.php');
 
     <!-- Products Start -->
     <?php
-    // Pagination setup for Featured Products
-    $items_per_page = 16;
+    // Pagination setup for Featured Products   
+    $items_per_page = 14;
     $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
     $offset = ($page - 1) * $items_per_page;
 
@@ -79,7 +79,7 @@ include('./header.php');
         <div class="featured-products-container">
             <div class="product-section-box p-4 mb-5">
                 <select class="form-control category-select" onchange="window.location.href=this.value" style="width: auto; min-width: 200px;">
-                    <option value="">All Categories</option>
+                    <option value="">Categories</option>
                     <?php
                     $categories = $conn->query("SELECT * FROM category");
                     while($category = $categories->fetch_assoc()) {
@@ -162,7 +162,7 @@ include('./header.php');
 }
 
 .product-section-box {
-    background: #fff;
+    background: #00FF00;
     border-radius: 15px;
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
     border: 1px solid rgba(40, 167, 69, 0.2);
@@ -196,6 +196,18 @@ include('./header.php');
 
 .carousel-item {
     height: 500px !important;
+    position: relative;
+}
+
+.carousel-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
 }
 
 .carousel-caption {
@@ -204,6 +216,7 @@ include('./header.php');
     left: 0;
     right: 0;
     padding: 50px 20px;
+    z-index: 2;
 }
 
 .carousel-indicators li {
@@ -279,6 +292,12 @@ include('./header.php');
     font-weight: 600;
     color: #333;
     margin-bottom: 10px;
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    min-height: 55px;
 }
 
 .product-item h5 {
@@ -357,7 +376,7 @@ include('./header.php');
     border: 0;
     height: 1px;
     background: linear-gradient(to right, #28a745, #28a745, #28a745);
-    margin: 20px 0;
+    margin: 10px 0;
     opacity: 0.5;
 }
 
@@ -365,12 +384,13 @@ include('./header.php');
     border: 1px solid rgba(40, 167, 69, 0.2);
     border-radius: 15px;
     padding: 20px;
-    background-color: #fff;
+    background-color: #F2F0EF;
     box-shadow: 0 0 15px rgba(0,0,0,0.05);
-    margin-bottom: px;
+    margin-bottom: 5px;
 }
 
 .product-section-box {
+    background: #f8f9fa;
     margin-bottom: 20px;
     border: none;
     box-shadow: none;
@@ -386,10 +406,7 @@ main {
     flex: 1 0 auto;
 }
 
-footer {
-    flex-shrink: 0;
-    margin-top: auto;
-}
+
 </style>
 
 <?php

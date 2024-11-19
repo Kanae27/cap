@@ -92,7 +92,29 @@ window.onclick = function(event) {
 }
 </script>
     <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary " style="bottom:0;position:fixed;margin-left:-0px;padding:10px;padding-bottom:0px !important;background:">		&copy; <a class="text-primary" href="#"></a> All Rights Reserved - Daniel and Marilyn's General Merchandise <?php echo date('Y'); ?></p>
+    <div class="container-fluid bg-dark text-secondary" style="padding:10px;">
+        <div class="row">
+            <div class="col-md-4">
+                <h5 class="text-primary mb-2">About Us</h5>
+                <p class="small">Daniel and Marilyn's General Merchandise is your trusted local store providing quality products and excellent service to our community.</p>
+            </div>
+            <div class="col-md-4">
+                <h5 class="text-primary mb-2">Contact Us</h5>
+                <p class="small">
+                    <i class="fa fa-phone-alt mr-2"></i> +63 912 345 6789<br>
+                    <i class="fa fa-envelope mr-2"></i> info@danielmarilyn.com
+                </p>
+            </div>
+            <div class="col-md-4">
+                <h5 class="text-primary mb-2">Location</h5>
+                <p class="small">
+                    <i class="fa fa-map-marker-alt mr-2"></i>
+                    123 Sample Street, Barangay Name,<br>
+                    City, Province, Philippines
+                </p>
+            </div>
+        </div>
+        
     </div>
     <!-- Footer End -->
 
