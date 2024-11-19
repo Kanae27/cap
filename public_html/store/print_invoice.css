@@ -1,0 +1,77 @@
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    h1 {
+      font-family: fantasy;
+      font-size: 70px;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid black;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 5px;
+    }
+    th {
+      text-align: center;
+    }
+    table.yellowTable thead {
+      background-color: #FFFF00;
+    }
+    table.yellowTable tbody tr:nth-child(even) {
+      background-color: #FFFFFF;
+    }
+    table.yellowTable tbody tr:nth-child(odd) {
+      background-color: #ecebeb;
+    }
+    img {
+      float: right;
+      width: 200px;
+      height: 200px;
+      transform: translateY(-90px);
+        padding-right: 50px;
+    }
+	
+	@media print {
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    h1 {
+      font-family: fantasy;
+      font-size: 70px;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid black;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 5px;
+    }
+    th {
+      text-align: center;
+    }
+    table.yellowTable thead {
+      background-color: #FFFF00;
+    }
+    table.yellowTable tbody tr:nth-child(even) {
+      background-color: #FFFFFF;
+    }
+    table.yellowTable tbody tr:nth-child(odd) {
+      background-color: #ecebeb;
+    }
+    img {
+      float: right;
+      width: 200px;
+      height: 200px;
+      transform: translateY(-90px);
+        padding-right: 50px;
+    }
+}
