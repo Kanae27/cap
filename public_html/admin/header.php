@@ -209,15 +209,23 @@ while($row=  mysqli_fetch_array($r)) {
               <div class="menu_section">
                 <h3>General</h3>
                 <ul class="nav side-menu">
-                  <li><a href="index.php" style="border-bottom:1px solid #FFF"><i class="fa fa-home"></i> Dashboard </a></li>
-                  <li style="display:none"><a href="store.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-store"  style="font-size:20px"></i> &nbsp;POS List </a>
-                  </li>
-                  <li><a href="category.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-list" style="font-size:20px"></i> &nbsp;Category List </a></li>
-                  <li><a href="product.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-sitemap" style="font-size:20px"></i> &nbsp;Product List </a></li>
-                  <li><a href="sales_report.php" style="border-bottom:1px solid #FFF"><i class="fa-light fa-file-chart-column"  style="font-size:20px"></i> &nbsp;Sales Report </a></li>
-                <li style="display:none" style="border-bottom:1px solid #FFF"><a href="audit.php"><i class="fa fa-list"></i> Audit Trail </a></li>
-                <li><a href="settings.php" style="border-bottom:1px solid #FFF"><i class="fa fa-gear"></i> Account Settings </a></li>
-                <li><a href="../logout.php" style="border-bottom:1px solid #FFF" onclick="return confirm('Are you sure you want to logout?')"><i class="fa-solid fa-right-from-bracket" style="font-size:20px"></i>&nbsp; Logout </a></li>
+                  <?php
+                  // Get current page filename
+                  $current_page = basename($_SERVER['PHP_SELF']);
+                  
+                  // Function to set menu item background
+                  function getMenuBg($page_name, $current_page) {
+                      return ($page_name === $current_page) ? 'background: #3c8c2e;' : 'background: #2d6822;';
+                  }
+                  ?>
+                  <li><a href="index.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('index.php', $current_page); ?>"><i class="fa fa-home"></i> Dashboard </a></li>
+                  <li style="display:none"><a href="store.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('store.php', $current_page); ?>"><i class="fa-solid fa-store" style="font-size:20px"></i> &nbsp;POS List </a></li>
+                  <li><a href="category.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('category.php', $current_page); ?>"><i class="fa-solid fa-list" style="font-size:20px"></i> &nbsp;Category List </a></li>
+                  <li><a href="product.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('product.php', $current_page); ?>"><i class="fa-solid fa-sitemap" style="font-size:20px"></i> &nbsp;Product List </a></li>
+                  <li><a href="sales_report.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('sales_report.php', $current_page); ?>"><i class="fa-light fa-file-chart-column" style="font-size:20px"></i> &nbsp;Sales Report </a></li>
+                  <li style="display:none"><a href="audit.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('audit.php', $current_page); ?>"><i class="fa fa-list"></i> Audit Trail </a></li>
+                  <li><a href="settings.php" style="border-bottom:1px solid #FFF; <?php echo getMenuBg('settings.php', $current_page); ?>"><i class="fa fa-gear"></i> Account Settings </a></li>
+                  <li><a href="../logout.php" style="border-bottom:1px solid #FFF" onclick="return confirm('Are you sure you want to logout?')"><i class="fa-solid fa-right-from-bracket" style="font-size:20px"></i>&nbsp; Logout </a></li>
                 </ul>
               </div>
             </div>

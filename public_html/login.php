@@ -96,55 +96,36 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
 </head>
 <body style="background:#FFFBE6">
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
-                <div class="card shadow">
-                    <div class="card-header text-center bg-primary text-white py-3">
-                        <h3 class="mb-0">Welcome Back!</h3>
-                    </div>
-                    <div class="card-body p-5">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
-                        </div>
-                        <form action="" method="POST">
-                            <div class="form-group mb-4">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-user"></i>
-                                        </span>
-                                    </div>
-                                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
-                                </div>
-                            </div>
-                            <div class="form-group mb-4">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-lock"></i>
-                                        </span>
-                                    </div>
-                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block btn-lg mb-4">
-                                <i class="fas fa-sign-in-alt mr-2"></i> <span class="login-text">Login</span>
-                            </button>
-                        </form>
-                        <div class="text-center">
-                            <p class="mb-2">Don't have an account?</p>
-                            <a href="register.php" class="btn btn-outline-primary">
-                                <i class="fas fa-user-plus mr-2"></i> Register here
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <style>
+    body {
+        background: url('./images/d.jpg') no-repeat center center fixed;
+        background-size: cover;
+        position: relative;
+    }
+    
+    /* For debugging - add a fallback color in case image fails to load */
+    body {
+        background-color: #FFFBE6;
+    }
+    
+    /* Add overlay to make text more readable */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 251, 230, 0.85); /* Semi-transparent version of #FFFBE6 */
+        z-index: -1;
+    }
+
+    /* Update card styles for better contrast */
+    .card {
+        backdrop-filter: blur(5px);
+        background: rgba(255, 255, 255, 0.95) !important;
+    }
+    
     .card {
         border: none;
         border-radius: 15px;
@@ -265,5 +246,52 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
         }
     }
     </style>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-header text-center bg-primary text-white py-3">
+                        <h3 class="mb-0">Welcome Back!</h3>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
+                        </div>
+                        <form action="" method="POST">
+                            <div class="form-group mb-4">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
+                                </div>
+                            </div>
+                            <div class="form-group mb-4">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                    </div>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block btn-lg mb-4">
+                                <i class="fas fa-sign-in-alt mr-2"></i> <span class="login-text">Login</span>
+                            </button>
+                        </form>
+                        <div class="text-center">
+                            <p class="mb-2">Don't have an account?</p>
+                            <a href="register.php" class="btn btn-outline-primary">
+                                <i class="fas fa-user-plus mr-2"></i> Register here
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

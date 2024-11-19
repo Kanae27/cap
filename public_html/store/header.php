@@ -144,16 +144,26 @@ $username =$_SESSION['username'];
               <div class="menu_section">
                 <h3>General</h3>
                 <ul class="nav side-menu">
-                  <li><a href="index.php" style="border-bottom:1px solid #FFF"><i class="fa fa-home"></i> Dashboard </a></li>
-                  <li><a href="product.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-list"  style="font-size:20px"></i> &nbsp;Product List</a></li>
-                  <li><a href="sale.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-list"  style="font-size:20px"></i> &nbsp;Sales</a></li>
-                  <li><a href="pos_.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-bullseye-pointer" style="font-size:20px"></i> &nbsp;Purchased Order System</a></li>
-                  <li><a href="sales.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-money-bill" style="font-size:20px"></i> &nbsp;Sales Report</a></li>
-                  <li><a href="delivery_tracking.php" style="border-bottom:1px solid #FFF"><i class="fa fa-truck"></i> Delivery Tracking 
-                    
-                  </a></li>
-                <li><a href="settings.php" style="border-bottom:1px solid #FFF"><i class="fa fa-gear"></i> Account Settings </a></li>
-                <li><a href="../logout.php" style="border-bottom:1px solid #FFF"><i class="fa-solid fa-right-from-bracket" style="font-size:20px"></i>&nbsp; Logout </a></li>
+                  <?php
+                  // Get current page filename
+                  $current_page = basename($_SERVER['PHP_SELF']);
+                  
+                  // Function to set background color based on active page
+                  function getMenuItemStyle($page_name, $current_page) {
+                      $base_style = "border-bottom:1px solid #FFF";
+                      return ($page_name === $current_page) 
+                          ? $base_style . ";background: rgba(255,255,255,0.2)"
+                          : $base_style . ";background: rgba(0,0,0,0.2)";
+                  }
+                  ?>
+                  <li><a href="index.php" style="<?php echo getMenuItemStyle('index.php', $current_page); ?>"><i class="fa fa-home"></i> Dashboard </a></li>
+                  <li><a href="product.php" style="<?php echo getMenuItemStyle('product.php', $current_page); ?>"><i class="fa-solid fa-list" style="font-size:20px"></i> &nbsp;Product List</a></li>
+                  <li><a href="sale.php" style="<?php echo getMenuItemStyle('sale.php', $current_page); ?>"><i class="fa-solid fa-chart-simple" style="font-size:20px"></i> &nbsp;Sales</a></li>
+                  <li><a href="pos_.php" style="<?php echo getMenuItemStyle('pos_.php', $current_page); ?>"><i class="fa-solid fa-bullseye-pointer" style="font-size:20px"></i> &nbsp;Purchased Order System</a></li>
+                  <li><a href="sales.php" style="<?php echo getMenuItemStyle('sales.php', $current_page); ?>"><i class="fa-solid fa-money-bill" style="font-size:20px"></i> &nbsp;Sales Report</a></li>
+                  <li><a href="delivery_tracking.php" style="<?php echo getMenuItemStyle('delivery_tracking.php', $current_page); ?>"><i class="fa fa-truck"></i> Delivery Tracking</a></li>
+                  <li><a href="settings.php" style="<?php echo getMenuItemStyle('settings.php', $current_page); ?>"><i class="fa fa-gear"></i> Account Settings </a></li>
+                  <li><a href="../logout.php" style="<?php echo getMenuItemStyle('logout.php', $current_page); ?>"><i class="fa-solid fa-right-from-bracket" style="font-size:20px"></i>&nbsp; Logout </a></li>
                 </ul>
               </div>
             </div>

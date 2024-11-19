@@ -2,13 +2,12 @@
 session_start();
 include('./connect.php');
 $username = $_SESSION['username'];
-$a = mt_rand(100000,999999); 
+$invoice_no = mt_rand(100000,999999); 
 
-$result1 = $conn->query("UPDATE cart SET invoice = '$a' WHERE username = '$username' AND status = 'Cart'");
-$result1 = $conn->query("UPDATE cart SET status = 'Pending' WHERE username = '$username' AND status = 'Cart'");
+$result1 = $conn->query("UPDATE cart SET invoice = '$invoice_no' WHERE username = '$username' AND status = 'Cart'");
+$result2 = $conn->query("UPDATE cart SET status = 'Pending' WHERE username = '$username' AND status = 'Cart'");
 
+// Redirect to invoice page instead of cart
+header("Location: invoice.php?invoice=" . $invoice_no);
+exit();
 ?>
-<script>
-alert("Item/s has been checked out. Please wait for a notification for the status of your request");
-window.location='cart.php';
-</script>

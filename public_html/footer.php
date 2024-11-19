@@ -1,4 +1,13 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  
+</body>
+</html>
 
 <!-- The Modal -->
 <div id="myModal" class="modal">
@@ -91,32 +100,103 @@ window.onclick = function(event) {
   }
 }
 </script>
-    <!-- Footer Start -->
-    <div class="container-fluid bg-dark text-secondary" style="padding:10px;">
-        <div class="row">
-            <div class="col-md-4">
+<!-- Footer Start -->
+<footer class="bg-dark text-light py-2">
+    <div class="container">
+        <div class="row text-center">
+            <!-- About Us Section -->
+            <div class="col-md-12 mb-2">
                 <h5 class="text-primary mb-2">About Us</h5>
-                <p class="small">Daniel and Marilyn's General Merchandise is your trusted local store providing quality products and excellent service to our community.</p>
-            </div>
-            <div class="col-md-4">
-                <h5 class="text-primary mb-2">Contact Us</h5>
-                <p class="small">
-                    <i class="fa fa-phone-alt mr-2"></i> +63 912 345 6789<br>
-                    <i class="fa fa-envelope mr-2"></i> info@danielmarilyn.com
-                </p>
-            </div>
-            <div class="col-md-4">
-                <h5 class="text-primary mb-2">Location</h5>
-                <p class="small">
-                    <i class="fa fa-map-marker-alt mr-2"></i>
-                    123 Sample Street, Barangay Name,<br>
-                    City, Province, Philippines
-                </p>
+                <p class="small">Our store was established way back in 2010<br>
+                We provide fresh vegetables and quality goods.<br>
+                And offer convenience to our customers.</p>
             </div>
         </div>
         
+        <div class="row text-center">
+            <!-- Location Section -->
+            <div class="col-md-4 mb-2">
+                <h5 class="text-primary mb-2">Location</h5>
+                <address class="small">
+                    <i class="fa fa-map-marker-alt mr-2" aria-hidden="true"></i>
+                    Rizal Street, Lipa City, Batangas<br>
+                    Philippines
+                </address>
+            </div>
+
+            <!-- Connect with Us Section -->
+            <div class="col-md-4 mb-2">
+                <h5 class="text-primary mb-2">Connect with Us</h5>
+                <div class="mb-3">
+                    <a href="#" class="text-light me-2" aria-label="Facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-light me-2" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-light me-2" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+                <p class="small">
+                    <i class="fa fa-mobile-alt me-2" aria-hidden="true"></i>
+                    0947-490-3288
+                </p>
+            </div>
+
+            <!-- Store Hours Section -->
+            <div class="col-md-4 mb-2">
+                <h5 class="text-primary mb-2">Store Hours</h5>
+                <p class="small">Monday - Sunday: 3:30 AM - 5:00 PM</p>
+            </div>
+        </div>
+
+        <!-- FAQs Section -->
+        <div class="row text-center">
+            <div class="col-md-12 mb-4">
+                <h5 class="text-primary mb-3">Frequently Asked Questions</h5>
+                <div class="small">
+                    <!-- FAQ Questions -->
+                    <p>
+                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer1')">Q: What products do you offer?</a></strong>
+                    </p>
+                    <p id="answer1" class="faq-answer" style="display:none;">A: We offer a variety of fresh vegetables and quality goods.</p>
+                    
+                    <p>
+                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer2')">Q: How do I place an order?</a></strong>
+                    </p>
+                    <p id="answer2" class="faq-answer" style="display:none;">A: You can place an order by browsing products, adding them to your cart, <br>and proceeding to checkout to complete the payment.</p>
+                    
+                    <p>
+                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer3')">Q: Do you offer delivery services?</a></strong>
+                    </p>
+                    <p id="answer3" class="faq-answer" style="display:none;">A: Yes, we provide delivery services for your convenience.</p>
+
+                    <!-- FAQ Page Button -->
+                    <a href="faq-page.php" class="btn btn-primary btn-sm mt-3">Visit Full FAQ Page</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Optional Bottom Line -->
+        <div class="text-center small mt-4">
+            &copy; <?= date('Y'); ?> Your Company. All rights reserved.
+        </div>
     </div>
-    <!-- Footer End -->
+</footer>
+<!-- Footer End -->
+
+<script>
+    function toggleAnswer(id) {
+        const answer = document.getElementById(id);
+        if (answer.style.display === 'none') {
+            answer.style.display = 'block';
+        } else {
+            answer.style.display = 'none';
+        }
+    }
+</script>
+
 
 
     <!-- Back to Top -->

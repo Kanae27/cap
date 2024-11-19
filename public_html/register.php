@@ -10,16 +10,35 @@ if(isset($_POST['submit'])) {
        return $data;
     }
     
+    function validatePassword($password) {
+        // Minimum 8 characters
+        if (strlen($password) < 8) return false;
+        // Check for uppercase
+        if (!preg_match('/[A-Z]/', $password)) return false;
+        // Check for lowercase
+        if (!preg_match('/[a-z]/', $password)) return false;
+        // Check for number
+        if (!preg_match('/[0-9]/', $password)) return false;
+        // Check for special character
+        if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) return false;
+        return true;
+    }
+    
     $name = validate($_POST['name']);
     $address = validate($_POST['address']);
     $contact = validate($_POST['contact']);
     $email = validate($_POST['email']);
     $username = validate($_POST['username']);
     $password = validate($_POST['password']);
+    $confirm_password = validate($_POST['confirm_password']);
     $type = 'user';
 
-    if (empty($username) || empty($password) || empty($name) || empty($contact) || empty($address) || empty($email)) {
+    if (empty($username) || empty($password) || empty($confirm_password) || empty($name) || empty($contact) || empty($address) || empty($email)) {
         echo '<script>alert("All fields are required");window.history.back();</script>';
+    } elseif ($password !== $confirm_password) {
+        echo '<script>alert("Passwords do not match");window.history.back();</script>';
+    } elseif (!validatePassword($password)) {
+        echo '<script>alert("Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");window.history.back();</script>';
     } else {
         // Check if username already exists
         $r = mysqli_query($conn,"SELECT * FROM login WHERE username = '$username'");
@@ -77,6 +96,11 @@ if(isset($_POST['submit'])) {
                             <div class="form-group">
                                 <label for="password">Password</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
+                                <small class="form-text text-muted">Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm_password">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                             </div>
                             <div class="form-group">
                                 <label for="name">Full Name</label>

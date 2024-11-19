@@ -3,7 +3,7 @@
 <style>
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     padding: 20px;
     margin-bottom: 0;
@@ -12,7 +12,8 @@
 
 .product-card {
     background: white;
-    border-radius: 8px;
+    border-radius: 15px;
+    border: 2px solid #347928;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 15px;
     text-align: center;
@@ -183,13 +184,56 @@ div {
     font-size: 13px;
     color: #666;
 }
+
+.cash-input-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.cash-input-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.cash-input-section input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.change-amount {
+    color: #347928;
+    font-size: 1.1em;
+    margin-top: 10px;
+}
 </style>
 
 <div class="right_col" role="main">
     <div class="main-content">
         <!-- Search Filter -->
         <div class="category-filter">
-            <input type="text" class="form-control" id="productSearch" placeholder="Search products...">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" id="productSearch" placeholder="Search products...">
+                </div>
+                <div class="col-md-6">
+                    <select class="form-control" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <?php
+                        $cat_query = "SELECT DISTINCT category FROM product ORDER BY category";
+                        $cat_result = mysqli_query($conn, $cat_query);
+                        while($cat_row = mysqli_fetch_assoc($cat_result)) {
+                            echo "<option value='" . htmlspecialchars(strtolower($cat_row['category'])) . "'>" 
+                                 . htmlspecialchars($cat_row['category']) . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <!-- Products Grid -->
@@ -213,7 +257,8 @@ div {
             while($row = $result->fetch_assoc()) {
                 ?>
                 <div class="product-card" data-name="<?php echo htmlspecialchars(strtolower($row['item'])); ?>" 
-                                       data-category="<?php echo htmlspecialchars(strtolower($row['category'])); ?>">
+                                       data-category="<?php echo htmlspecialchars(strtolower($row['category'])); ?>"
+                                       data-id="<?php echo $row['id']; ?>">
                     <img src="<?php echo htmlspecialchars($row['image']); ?>" class="product-image" alt="<?php echo htmlspecialchars($row['item']); ?>" onerror="this.src='default-product-image.jpg'">
                     <div class="product-info">
                         <div class="product-name"><?php echo $row['item']; ?></div>
@@ -226,6 +271,7 @@ div {
                             <button type="button" class="qty-btn" 
                                     onclick="updateCart(<?php echo $row['id']; ?>, 1, <?php echo $row['quantity']; ?>)">+</button>
                         </div>
+                        <div class="total-amount" id="total-<?php echo $row['id']; ?>">₱0.00</div>
                     </div>
                 </div>
                 <?php
@@ -247,7 +293,7 @@ div {
             <div style="float: right;">
                 <div class="pagination-numbers">
                     <?php if ($page > 1): ?>
-                        <a href="?page=<?php echo ($page-1); ?>" class="paginate_button">Previous</a>
+                        <a onclick="loadPage(<?php echo ($page-1); ?>)" class="paginate_button">Previous</a>
                     <?php endif; ?>
 
                     <?php
@@ -255,14 +301,14 @@ div {
                     $end_page = min($total_pages, $page + 2);
 
                     for ($i = $start_page; $i <= $end_page; $i++): ?>
-                        <a href="?page=<?php echo $i; ?>" 
+                        <a onclick="loadPage(<?php echo $i; ?>)" 
                            class="paginate_button <?php echo ($i == $page) ? 'current' : ''; ?>">
                             <?php echo $i; ?>
                         </a>
                     <?php endfor; ?>
 
                     <?php if ($page < $total_pages): ?>
-                        <a href="?page=<?php echo ($page+1); ?>" class="paginate_button">Next</a>
+                        <a onclick="loadPage(<?php echo ($page+1); ?>)" class="paginate_button">Next</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -279,6 +325,15 @@ div {
         <div class="cart-total" id="cart-total">
             Total: ₱0.00
         </div>
+        <div class="cash-input-section" style="margin: 15px 0;">
+            <div class="form-group">
+                <label for="cashInput">Cash Amount:</label>
+                <input type="number" class="form-control" id="cashInput" placeholder="Enter cash amount" step="0.01">
+            </div>
+            <div class="change-amount" id="changeAmount" style="margin-top: 10px; font-weight: bold;">
+                Change: ₱0.00
+            </div>
+        </div>
         <button onclick="processCheckout()" class="checkout-btn">Checkout</button>
     </div>
 </div>
@@ -292,13 +347,10 @@ async function updateCart(productId, change, maxStock) {
         const currentQty = cart[productId] || 0;
         const newQty = currentQty + change;
         
-        console.log('Updating cart:', {
-            productId,
-            currentQty,
-            change,
-            newQty,
-            maxStock
-        });
+        // Get the price from the product card
+        const productCard = document.querySelector(`[data-id="${productId}"]`);
+        const priceText = productCard.querySelector('.product-price').textContent;
+        const price = parseFloat(priceText.replace('₱', ''));
         
         if (newQty < 0) {
             console.log('Quantity would be negative, aborting');
@@ -321,7 +373,6 @@ async function updateCart(productId, change, maxStock) {
         });
         
         const data = await response.json();
-        console.log('Server response:', data);
         
         if (data.success) {
             if (newQty === 0) {
@@ -329,7 +380,21 @@ async function updateCart(productId, change, maxStock) {
             } else {
                 cart[productId] = newQty;
             }
-            document.getElementById(`qty-${productId}`).textContent = newQty;
+            
+            // Update quantity display
+            const qtyDisplay = document.getElementById(`qty-${productId}`);
+            const totalDisplay = document.getElementById(`total-${productId}`);
+            
+            if (qtyDisplay) {
+                qtyDisplay.textContent = newQty.toFixed(2);
+            }
+            
+            // Calculate and display total amount
+            const total = newQty * price;
+            if (totalDisplay) {
+                totalDisplay.textContent = `₱${total.toFixed(2)}`;
+            }
+            
             await updateCartDisplay();
         } else {
             alert(data.message || 'Error updating cart');
@@ -371,6 +436,8 @@ async function updateCartDisplay() {
                     </div>
                     <div>
                         ₱${itemTotal.toFixed(2)}
+                        <button onclick="editCartItem(${item.product_id}, ${item.quantity}, ${item.max_quantity})" 
+                                class="btn btn-sm btn-primary">Edit</button>
                         <button onclick="updateCart(${item.product_id}, -${item.quantity}, ${item.max_quantity})" 
                                 class="btn btn-sm btn-danger">×</button>
                     </div>
@@ -390,6 +457,10 @@ async function updateCartDisplay() {
         console.error('Error:', error);
         cartItems.innerHTML = '<div class="alert alert-danger">Error loading cart</div>';
     }
+    
+    document.getElementById('cashInput').value = '';
+    document.getElementById('changeAmount').textContent = 'Change: ₱0.00';
+    document.querySelector('.checkout-btn').disabled = false;
 }
 
 // Add this function to manually refresh cart
@@ -477,6 +548,77 @@ async function processCheckout() {
         checkoutBtn.textContent = 'Checkout';
         checkoutBtn.disabled = false;
     }
+}
+
+// Add category filter event listener
+document.getElementById('categoryFilter').addEventListener('change', function(e) {
+    const categoryValue = e.target.value.toLowerCase();
+    const products = document.querySelectorAll('.product-card');
+    
+    products.forEach(product => {
+        const category = product.getAttribute('data-category');
+        if (!categoryValue || category === categoryValue) {
+            product.style.display = '';
+        } else {
+            product.style.display = 'none';
+        }
+    });
+});
+
+// Add cash input handler
+document.getElementById('cashInput').addEventListener('input', function(e) {
+    const cashAmount = parseFloat(e.target.value) || 0;
+    const totalText = document.getElementById('cart-total').textContent;
+    const totalAmount = parseFloat(totalText.replace('Total: ₱', '')) || 0;
+    
+    const change = cashAmount - totalAmount;
+    document.getElementById('changeAmount').textContent = 
+        `Change: ₱${Math.max(0, change).toFixed(2)}`;
+    
+    // Update checkout button state
+    const checkoutBtn = document.querySelector('.checkout-btn');
+    checkoutBtn.disabled = cashAmount < totalAmount;
+});
+
+// Add these new functions to your script section
+async function loadPage(pageNumber) {
+    try {
+        const response = await fetch(`get_products.php?page=${pageNumber}`);
+        const data = await response.text();
+        
+        document.querySelector('.product-grid').innerHTML = data;
+        
+        // Update URL without reloading
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.set('page', pageNumber);
+        window.history.pushState({}, '', newUrl);
+        
+        // Update pagination buttons
+        document.querySelectorAll('.paginate_button').forEach(button => {
+            button.classList.remove('current');
+            if (button.textContent == pageNumber) {
+                button.classList.add('current');
+            }
+        });
+    } catch (error) {
+        console.error('Error loading page:', error);
+    }
+}
+
+function editCartItem(productId, currentQty, maxQty) {
+    const newQty = prompt(`Enter new quantity (1-${maxQty}):`, currentQty);
+    
+    if (newQty === null) return; // User cancelled
+    
+    const quantity = parseInt(newQty);
+    if (isNaN(quantity) || quantity < 1 || quantity > maxQty) {
+        alert(`Please enter a valid quantity between 1 and ${maxQty}`);
+        return;
+    }
+    
+    // Calculate the difference to update the cart
+    const difference = quantity - currentQty;
+    updateCart(productId, difference, maxQty);
 }
 </script>
 

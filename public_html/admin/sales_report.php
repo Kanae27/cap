@@ -75,20 +75,8 @@ include('./header.php');
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                               
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
+               
             </div>
         </div>
     </div>
@@ -144,6 +132,17 @@ include('./header.php');
     </div>
 
     <!-- After filter section and before purchase list -->
+    <div class="row mb-3">
+        <?php
+        // Count POS transactions
+        $pos_query = "SELECT COUNT(*) as pos_count FROM cart WHERE invoice IS NOT NULL AND name = 'pos'";
+        $pos_result = $conn->query($pos_query);
+        $pos_count = $pos_result->fetch_assoc()['pos_count'];
+        ?>
+       
+    </div>
+
+    <!-- After filter section and before purchase list -->
     <div class="row charts-row">
         <!-- Monthly Sales Bar Chart -->
         <div class="col-md-8">
@@ -158,28 +157,27 @@ include('./header.php');
                     </thead>
                     <tbody>
                         <?php
-                        // Initialize monthly variables for current year
+                        // Define base queries first (add this before the filter handling code)
                         $current_year = date('Y');
-                        $months = array_fill(1, 12, 0); // Initialize with month numbers as keys
 
-                        // Monthly sales calculation - updated to include all transactions
+                        // Base monthly query
                         $monthly_query = "
                             SELECT 
                                 MONTH(timestamp) as month,
                                 SUM(total_amount) as total,
                                 COUNT(*) as transaction_count
                             FROM (
-                                -- Get all sales from cart table
                                 SELECT 
                                     c.timestamp,
                                     (c.quantity * p.price) as total_amount
                                 FROM cart c
                                 JOIN product p ON c.product = p.id
                                 WHERE YEAR(c.timestamp) = $current_year
+                                AND c.status != 'heart'  
+                                AND c.status != 'cart'
                                 
                                 UNION ALL
                                 
-                                -- Get all sales from cart_items table
                                 SELECT 
                                     ci.timestamp,
                                     (ci.quantity * p.price) as total_amount
@@ -187,10 +185,49 @@ include('./header.php');
                                 JOIN product p ON ci.product_id = p.id
                                 WHERE ci.invoice IS NOT NULL
                                 AND YEAR(ci.timestamp) = $current_year
+                                AND ci.status != 'heart'
+                                AND ci.status != 'cart'
                             ) combined_sales
                             GROUP BY MONTH(timestamp)
                             ORDER BY month
                         ";
+
+                        // Filter handling
+                        if(isset($_POST['by_date'])) {
+                            $filter_date = $_POST['date'];
+                            $where_clause = "DATE(timestamp) = '$filter_date'";
+                            
+                            // Modify queries with filter
+                            $monthly_query = preg_replace(
+                                "/WHERE (.*?)(?=GROUP BY|$)/s",
+                                "WHERE $where_clause AND ",
+                                $monthly_query
+                            );
+                            
+                        } elseif(isset($_POST['by_month_range'])) {
+                            $start_date = $_POST['start_date'];
+                            $end_date = $_POST['end_date'];
+                            $where_clause = "DATE(timestamp) BETWEEN '$start_date' AND '$end_date'";
+                            
+                            // Modify queries with filter
+                            $monthly_query = preg_replace(
+                                "/WHERE (.*?)(?=GROUP BY|$)/s",
+                                "WHERE $where_clause AND ",
+                                $monthly_query
+                            );
+                            
+                        } elseif(isset($_POST['by_year'])) {
+                            $year = $_POST['year'];
+                            $where_clause = "YEAR(timestamp) = '$year'";
+                            
+                            // Modify queries with filter
+                            $monthly_query = preg_replace(
+                                "/WHERE (.*?)(?=GROUP BY|$)/s",
+                                "WHERE $where_clause AND ",
+                                $monthly_query
+                            );
+                            
+                        }
 
                         $result = $conn->query($monthly_query);
                         if ($result === false) {
@@ -218,34 +255,78 @@ include('./header.php');
             <div class="chart-container">
                 <div id="productPieChart" style="width:100%; height:400px"></div>
                 <?php
-                // Most purchased products pie chart - updated to include all transactions
+                // Base pie chart query
                 $pie_query = "
                     SELECT 
                         p.item as name,
                         SUM(c.quantity) as total_quantity,
                         SUM(c.quantity * p.price) as total_sales
                     FROM (
-                        -- Combine quantities from both tables
                         SELECT 
                             product as product_id, 
                             quantity,
-                            'cart' as source 
+                            'cart' as source,
+                            status,
+                            timestamp
                         FROM cart
+                        WHERE status != 'heart'
+                        AND status != 'cart'
                         
                         UNION ALL
                         
                         SELECT 
                             product_id, 
                             quantity,
-                            'cart_items' as source 
+                            'cart_items' as source,
+                            status,
+                            timestamp
                         FROM cart_items 
                         WHERE invoice IS NOT NULL
+                        AND status != 'heart'
+                        AND status != 'cart'
                     ) c
                     JOIN product p ON c.product_id = p.id
                     GROUP BY p.id, p.item
                     ORDER BY total_quantity DESC
                     LIMIT 5
                 ";
+
+                // Filter handling
+                if(isset($_POST['by_date'])) {
+                    $filter_date = $_POST['date'];
+                    $where_clause = "DATE(timestamp) = '$filter_date'";
+                    
+                    // Modify queries with filter
+                    $pie_query = preg_replace(
+                        "/WHERE (.*?)(?=GROUP BY|$)/s",
+                        "WHERE $where_clause AND ",
+                        $pie_query
+                    );
+                    
+                } elseif(isset($_POST['by_month_range'])) {
+                    $start_date = $_POST['start_date'];
+                    $end_date = $_POST['end_date'];
+                    $where_clause = "DATE(timestamp) BETWEEN '$start_date' AND '$end_date'";
+                    
+                    // Modify queries with filter
+                    $pie_query = preg_replace(
+                        "/WHERE (.*?)(?=GROUP BY|$)/s",
+                        "WHERE $where_clause AND ",
+                        $pie_query
+                    );
+                    
+                } elseif(isset($_POST['by_year'])) {
+                    $year = $_POST['year'];
+                    $where_clause = "YEAR(timestamp) = '$year'";
+                    
+                    // Modify queries with filter
+                    $pie_query = preg_replace(
+                        "/WHERE (.*?)(?=GROUP BY|$)/s",
+                        "WHERE $where_clause AND ",
+                        $pie_query
+                    );
+                    
+                }
 
                 $pie_result = $conn->query($pie_query);
                 $pie_data = array();
@@ -294,7 +375,7 @@ include('./header.php');
             </thead>
             <tbody>
                 <?php
-                $conn = mysqli_connect("localhost", "u154080756_root", "@Danielgstore1", "u154080756_daniel");
+                $conn = mysqli_connect("localhost", "root", "", "daniel");
                 // Check both cart_items and cart tables
                 $check_cart_items = "SELECT COUNT(*) as count FROM cart_items WHERE invoice IS NOT NULL";
                 $check_cart = "SELECT COUNT(*) as count FROM cart WHERE status = 'Delivered'";
@@ -321,7 +402,7 @@ include('./header.php');
                     echo "<!-- Field: {$row['Field']}, Type: {$row['Type']} -->";
                 }
 
-                // Updated purchase list query to show all items from both tables
+                // Base purchase query
                 $purchase_query = "
                     (SELECT DISTINCT 
                         ci.invoice,
@@ -332,7 +413,9 @@ include('./header.php');
                         ci.status,
                         'cart_items' as source
                     FROM cart_items ci
-                    WHERE ci.invoice IS NOT NULL)
+                    WHERE ci.invoice IS NOT NULL
+                    AND ci.status != 'heart'
+                    AND ci.status != 'cart')
                     
                     UNION ALL
                     
@@ -344,10 +427,49 @@ include('./header.php');
                         c.timestamp,
                         c.status,
                         'cart' as source
-                    FROM cart c)
+                    FROM cart c
+                    WHERE c.status != 'heart'
+                    AND c.status != 'cart')
                     
                     ORDER BY timestamp DESC
                 ";
+
+                // Filter handling
+                if(isset($_POST['by_date'])) {
+                    $filter_date = $_POST['date'];
+                    $where_clause = "DATE(timestamp) = '$filter_date'";
+                    
+                    // Modify queries with filter
+                    $purchase_query = preg_replace(
+                        "/WHERE (.*?)(?=\))/s",
+                        "WHERE $where_clause AND ",
+                        $purchase_query
+                    );
+                    
+                } elseif(isset($_POST['by_month_range'])) {
+                    $start_date = $_POST['start_date'];
+                    $end_date = $_POST['end_date'];
+                    $where_clause = "DATE(timestamp) BETWEEN '$start_date' AND '$end_date'";
+                    
+                    // Modify queries with filter
+                    $purchase_query = preg_replace(
+                        "/WHERE (.*?)(?=\))/s",
+                        "WHERE $where_clause AND ",
+                        $purchase_query
+                    );
+                    
+                } elseif(isset($_POST['by_year'])) {
+                    $year = $_POST['year'];
+                    $where_clause = "YEAR(timestamp) = '$year'";
+                    
+                    // Modify queries with filter
+                    $purchase_query = preg_replace(
+                        "/WHERE (.*?)(?=\))/s",
+                        "WHERE $where_clause AND ",
+                        $purchase_query
+                    );
+                    
+                }
 
                 $purchases_result = $conn->query($purchase_query);
 

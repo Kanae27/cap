@@ -107,20 +107,22 @@ include('./header.php');
 					include('../connect.php');
 					$total = 0;
 					$username = $_SESSION['username'];
+					$customer_count = 0; // Initialize customer counter
 
-					// Initialize $result1 with a default query
-					$result1 = $conn->query("SELECT DISTINCT invoice FROM cart ORDER BY timestamp DESC");
+					// Initialize $result1 with a default query using prepared statement
+					$result1 = $conn->prepare("SELECT DISTINCT invoice FROM cart WHERE invoice IS NOT NULL ORDER BY timestamp DESC");
+					$result1->execute();
+					$result1 = $result1->get_result();
 
 					if(isset($_POST['by_date'])) {
 						$date = $_POST['date'];
 						$d = date('F d, Y', strtotime($date));
-						echo '<h3>Sales Report for - '.$d.'</h3>';
-						$result1 = $conn->query("
-							SELECT DISTINCT invoice 
-							FROM cart 
-							WHERE DATE(timestamp) = '$date'
-							ORDER BY timestamp DESC
-						");
+						echo '<h3>Sales Report for - '.htmlspecialchars($d).'</h3>';
+						
+						$stmt = $conn->prepare("SELECT DISTINCT invoice FROM cart WHERE invoice IS NOT NULL AND DATE(timestamp) = ? ORDER BY timestamp DESC");
+						$stmt->bind_param("s", $date);
+						$stmt->execute();
+						$result1 = $stmt->get_result();
 					}
 
 					if(isset($_POST['by_month'])) {
@@ -131,31 +133,35 @@ include('./header.php');
 						
 						$d1 = date('F, Y', strtotime($start_date));
 						$d2 = date('F, Y', strtotime($end_date));
-						echo '<h3>Sales Report for - '.$d1.' - '.$d2.'</h3>';
+						echo '<h3>Sales Report for - '.htmlspecialchars($d1).' - '.htmlspecialchars($d2).'</h3>';
 						
-						$result1 = $conn->query("
-							SELECT DISTINCT invoice 
-							FROM cart 
-							WHERE timestamp >= '$start_date_formatted' 
-							AND timestamp <= '$end_date_formatted'
-							ORDER BY timestamp DESC
-						");
+						$stmt = $conn->prepare("SELECT DISTINCT invoice FROM cart WHERE invoice IS NOT NULL AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp DESC");
+						$stmt->bind_param("ss", $start_date_formatted, $end_date_formatted);
+						$stmt->execute();
+						$result1 = $stmt->get_result();
 					}
 
 					if(isset($_POST['by_year'])) {
 						$year = $_POST['year'];
-						echo '<h3>Sales Report for - '.$year.'</h3>';
-						$result1 = $conn->query("
-							SELECT DISTINCT invoice 
-							FROM cart 
-							WHERE YEAR(timestamp) = '$year'
-							ORDER BY timestamp DESC
-						");
+						echo '<h3>Sales Report for - '.htmlspecialchars($year).'</h3>';
+						
+						$stmt = $conn->prepare("SELECT DISTINCT invoice FROM cart WHERE invoice IS NOT NULL AND YEAR(timestamp) = ? ORDER BY timestamp DESC");
+						$stmt->bind_param("i", $year);
+						$stmt->execute();
+						$result1 = $stmt->get_result();
 					}
+
+					// Get unique customer count before displaying results
+					$customer_names = array(); // Array to track unique customers
 
 					// Display results
 					while($row1 = $result1->fetch_assoc()) {
 						$invoice = $row1['invoice'];
+						
+						// Skip if invoice is null or empty
+						if (empty($invoice)) {
+							continue;
+						}
 						
 						// Get the first row for this invoice to get customer details
 						$details_query = $conn->query("
@@ -164,6 +170,12 @@ include('./header.php');
 							LIMIT 1
 						");
 						$details = $details_query->fetch_assoc();
+						
+						// Add customer name to array if not already present
+						if (!empty($details['name']) && !in_array($details['name'], $customer_names)) {
+							$customer_names[] = $details['name'];
+							$customer_count++;
+						}
 						
 						echo '<tr>';
 						echo '<td>' . htmlspecialchars($invoice) . '</td>';
@@ -200,11 +212,25 @@ include('./header.php');
 						$total += $total_for_invoice;
 					}
 
-					// Display total at the bottom
-					echo '<tr class="table-info">';
-					echo '<td colspan="5" style="text-align: right;"><strong>Total:</strong></td>';
-					echo '<td colspan="2"><strong>₱' . number_format($total, 2) . '</strong></td>';
-					echo '</tr>';
+					// Display customer count and total before the table
+					echo '<div class="row mb-3">';
+					echo '<div class="col-md-6">';
+				
+					echo '</div>';
+					echo '<div class="col-md-6 text-right">';
+					if ($total > 0) {
+						echo '<h4>Total Sales: ₱' . number_format($total, 2) . '</h4>';
+					}
+					echo '</div>';
+					echo '</div>';
+
+					// Only display total if there are results
+					if ($total > 0) {
+						echo '<tr class="table-info">';
+						echo '<td colspan="5" style="text-align: right;"><strong>Total:</strong></td>';
+						echo '<td colspan="2"><strong>₱' . number_format($total, 2) . '</strong></td>';
+						echo '</tr>';
+					}
 					?>
 					</table>
                       </div>

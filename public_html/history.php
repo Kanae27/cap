@@ -115,15 +115,31 @@ if(isset($_POST['update_status'])) {
                                 <div class="progress" style="height: 5px;">
                                     <?php
                                     $progress = 0;
+                                    $progress_color = 'bg-success'; // Default color
                                     switch($status) {
-                                        case 'Processing': $progress = 45; break;
-                                        case 'In Transit': $progress = 75; break;
-                                        case 'Ready to Pick Up': $progress = 85; break;
-                                        case 'Approved': $progress = 90; break;
-                                        case 'Delivered': $progress = 100; break;
+                                        case 'Processing': 
+                                            $progress = 45; 
+                                            $progress_color = 'bg-warning';
+                                            break;
+                                        case 'In Transit': 
+                                            $progress = 75;
+                                            $progress_color = 'bg-info';
+                                            break;
+                                        case 'Ready to Pick Up': 
+                                            $progress = 85;
+                                            $progress_color = 'bg-primary';
+                                            break;
+                                        case 'Approved': 
+                                            $progress = 90;
+                                            $progress_color = 'bg-info';
+                                            break;
+                                        case 'Delivered': 
+                                            $progress = 100;
+                                            $progress_color = 'bg-success';
+                                            break;
                                     }
                                     ?>
-                                    <div class="progress-bar bg-success" role="progressbar" 
+                                    <div class="progress-bar <?php echo $progress_color; ?>" role="progressbar" 
                                          style="width: <?php echo $progress; ?>%" 
                                          aria-valuenow="<?php echo $progress; ?>" 
                                          aria-valuemin="0" 
