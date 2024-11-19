@@ -227,8 +227,9 @@ include('./header.php');
 }
 
 .product-item {
-    border: none;
+    border: 2px solid #28a745;
     border-radius: 12px;
+    background-color: #ffffff;
     overflow: hidden;
     transition: all 0.3s ease;
     box-shadow: 0 2px 15px rgba(0,0,0,0.08);
@@ -236,7 +237,8 @@ include('./header.php');
 
 .product-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    box-shadow: 0 5px 20px rgba(40, 167, 69, 0.3);
+    border-color: #1e7e34;
 }
 
 .product-img {

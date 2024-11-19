@@ -244,7 +244,7 @@ if (isset($_GET['id'])) {
                                 ?>
                                 
                                 <div class="col-lg-2.4 col-md-4 col-sm-6 pb-1" style="flex: 0 0 20%; max-width: 20%;">
-                                    <div class="product-item bg-green mb-4" style="border-radius: 15px; overflow: hidden;">
+                                    <div class="product-item bg-green mb-4" style="border-radius: 15px; overflow: hidden; border: 2px solid #28a745;">
                                         <div class="product-img position-relative overflow-hidden">
                                             <img class="img-fluid w-100" style="height: 250px; object-fit: cover; border-top-left-radius: 15px; border-top-right-radius: 15px;" src="<?php echo $row['image'] ?>" alt="">
                                             <div class="product-action">
