@@ -12,8 +12,7 @@ include('./header.php');
                 <div id="header-carousel" class="carousel slide carousel-fade mb-30 mb-lg-0" data-ride="carousel">
                     <ol class="carousel-indicators">
                         <li data-target="#header-carousel" data-slide-to="0" class="active"></li>
-                        <li data-target="#header-carousel" data-slide-to="1"></li>
-                        <li data-target="#header-carousel" data-slide-to="2"></li>
+
                     </ol>
                     <div class="carousel-inner">
                         <div class="carousel-item position-relative active" style="height: 430px;">
@@ -21,7 +20,7 @@ include('./header.php');
                             <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                                 <div class="p-3" style="max-width: 80%;">
                                     <h1 class="display-4 text-white mb-3 animate__animated animate__fadeInDown">General Merchandise</h1>
-                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                                    <p class="mx-md-5 px-5 animate__animated animate__bounceIn">"Fresh foods are nature's gift, packed with nutrients to nourish your body and soul. Every bite is a step toward better health, energizing you from the inside out. Choosing fresh ingredients not only supports your well-being but also connects you to the earth's natural rhythms. Embrace freshness, and let your meals become a celebration of life."</p>
                                    
                                 </div>
                             </div>
@@ -29,7 +28,7 @@ include('./header.php');
                     </div>
                 </div>
             </div>
-        </div>
+        </div>  
     </div>
     <!-- Carousel End -->
 
@@ -58,7 +57,7 @@ include('./header.php');
         <!-- Featured Products Section -->
         <div class="featured-products-container">
             <div class="product-section-box p-4 mb-5">
-                <select class="form-control category-select" onchange="window.location.href=this.value" style="width: auto; min-width: 200px;">
+                <select class="form-control category-select" onchange="window.location.href=this.value">
                     <option value="">Categories</option>
                     <?php
                     $categories = $conn->query("SELECT * FROM category");
@@ -73,7 +72,10 @@ include('./header.php');
                 </h2>
             </div>
             <div class="row px-xl-5" id="featured-products-container">
-                <?php include('get_products.php'); // Initial load of featured products ?>
+                <?php 
+                // Modify get_products.php to include rating display
+                include('get_products.php'); 
+                ?>
             </div>
             
             <!-- Pagination -->
@@ -127,7 +129,29 @@ include('./header.php');
             <!-- Recent Products Pagination -->
             <div class="d-flex justify-content-center mt-4 mb-4">
                 <nav aria-label="Recent products navigation">
-                    
+                    <ul class="pagination" id="recent-pagination">
+                        <?php if($recent_page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="<?php echo $recent_page-1; ?>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <?php for($i = 1; $i <= $total_recent_pages; $i++): ?>
+                            <li class="page-item <?php echo $i == $recent_page ? 'active' : ''; ?>">
+                                <a class="page-link" href="#" data-page="<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        
+                        <?php if($recent_page < $total_recent_pages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="#" data-page="<?php echo $recent_page+1; ?>" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
                 </nav>
             </div>
         </div>
@@ -213,6 +237,10 @@ include('./header.php');
     overflow: hidden;
     transition: all 0.3s ease;
     box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
 }
 
 .product-item:hover {
@@ -224,6 +252,19 @@ include('./header.php');
 .product-img {
     position: relative;
     border-radius: 12px 12px 0 0;
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
 }
 
 .product-action {
@@ -238,6 +279,7 @@ include('./header.php');
     background: rgba(255,255,255,0.95);
     transition: all 0.3s ease;
     opacity: 0;
+    z-index: 2;
 }
 
 .product-item:hover .product-action {
@@ -266,7 +308,22 @@ include('./header.php');
 
 .text-center.py-4 {
     padding: 20px !important;
-    background: white;  
+    background: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 150px;
+}
+
+.product-rating {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    margin: 10px 0;
+    position: relative;
+    z-index: 1;
 }
 
 .h6.text-truncate {
@@ -277,9 +334,9 @@ include('./header.php');
     white-space: normal;
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    min-height: 55px;
+    min-height: 45px;
 }
 
 .product-item h5 {
@@ -291,11 +348,17 @@ include('./header.php');
 .fa-star {
     color: #FFD700 !important;
     margin: 0 2px;
+    -webkit-text-stroke: 1px #b38f00;
+    text-stroke: 1px #b38f00;
+    font-size: 1rem;
 }
 
 .far.fa-star {
     color: #d4d4d4 !important;
     margin: 0 2px;
+    -webkit-text-stroke: 1px #808080;
+    text-stroke: 1px #808080;
+    font-size: 1rem;
 }
 
 .text-primary {
@@ -388,6 +451,13 @@ main {
     flex: 1 0 auto;
 }
 
+.category-select {
+    width: 25% !important;
+    min-width: 25% !important;
+    padding: 15x;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
 
 </style>
 

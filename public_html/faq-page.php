@@ -14,19 +14,19 @@
             background-color: #f0f4f8;
         }
         header {
-            background: #2c3e50;
+            background: #2e7d32;
             color: white;
             padding: 60px 20px;
         }
         header h1 {
             font-size: 3rem;
-            color: #f1c40f;
+            color: yellow;
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
         header p {
             font-size: 1.2rem;
-            color: white;
+            color: yellow;
             font-weight: 300;
         }
         .faq-section {
@@ -36,17 +36,17 @@
             font-weight: bold;
             cursor: pointer;
             font-size: 1.1rem;
-            color: #f1c40f;
+            color: yellow;
         }
         .faq-answer {
             display: none;
             margin-top: 10px;
             padding-left: 20px;
             font-size: 1rem;
-            color: white;
+            color: yellow;
         }
         .faq-card {
-            background-color: #2c3e50;
+            background-color: #2e7d32;
             border-radius: 10px;
             border: 1px solid #ddd;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -61,27 +61,27 @@
             color: #28a745;
         }
         .btn-primary {
-            background-color: #2c3e50;
-            border-color: #28a745;
-            color:#f1c40f;
+            background-color: #2e7d32;
+            border-color: #81c784;
+            color: yellow;
             padding: 12px 30px;
             font-size: 1rem;
             border-radius: 30px;
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
-            background-color: #f1c40f;
-            color: #333;
-            border-color: ##2c3e50;
+            background-color: #81c784;
+            color: yellow;
+            border-color: #2e7d32;
         }
         footer {
-            background-color: #2c3e50;
+            background-color: #2e7d32;
             color: white;
             padding: 20px 0;
         }
         footer p {
             font-size: 0.9rem;
-            color: white;
+            color: yellow;
             margin: 0;
         }
         @media (max-width: 768px) {

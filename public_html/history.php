@@ -40,6 +40,19 @@ if(isset($_POST['update_status'])) {
     <div class="container-fluid">
         <div class="row px-xl-5">
             <div class="col-lg-12 table-responsive mb-5">
+                <!-- Status Legend -->
+                <div class="status-legend mb-3">
+                    <h6 class="mb-2">Order Status Legend:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge badge-warning"><i class="fas fa-cog fa-spin me-1"></i>Processing</span>
+                        <span class="badge badge-primary"><i class="fas fa-truck fa-flip-horizontal me-1"></i>In Transit</span>
+                        <span class="badge badge-info"><i class="fas fa-shipping-fast me-1"></i>Out for Delivery</span>
+                        <span class="badge badge-purple"><i class="fas fa-box me-1"></i>Ready to Pick Up</span>
+                        <span class="badge badge-info"><i class="fas fa-check-circle me-1"></i>Approved</span>
+                        <span class="badge badge-success"><i class="fas fa-check-double me-1"></i>Delivered</span>
+                        <span class="badge badge-danger"><i class="fas fa-times-circle me-1"></i>Cancelled</span>
+                    </div>
+                </div>
                 <table class="table table-light table-borderless table-hover text-center mb-0">
                     <thead class="thead-dark">
                         <tr>
@@ -82,7 +95,7 @@ if(isset($_POST['update_status'])) {
                     ?>
                         <tr>
                             <td class="align-middle">
-                                <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="" style="width: 50px;">
+                                <img src="<?php echo htmlspecialchars($row['image']); ?>" alt="" class="product-image">
                             </td>
                             <td class="align-middle"><?php echo htmlspecialchars($row['item']); ?></td>
                             <td class="align-middle">&#8369; <?php echo number_format($price, 2); ?></td>
@@ -92,42 +105,64 @@ if(isset($_POST['update_status'])) {
                                 <?php 
                                 $status = $row['status'];
                                 $badge_class = 'badge badge-';
+                                $icon = '';
                                 switch($status) {
                                     case 'Processing':
                                         $badge_class .= 'warning';
+                                        $icon = '<i class="fas fa-cog fa-spin me-1"></i>';
                                         break;
                                     case 'In Transit':
-                                        $badge_class .= 'info';
+                                        $badge_class .= 'primary';
+                                        $icon = '<i class="fas fa-truck fa-flip-horizontal me-1"></i>';
                                         break;
                                     case 'Out for Delivery':
-                                        $badge_class .= 'primary';
+                                        $badge_class .= 'info';
+                                        $icon = '<i class="fas fa-shipping-fast me-1"></i>';
+                                        break;
+                                    case 'Ready to Pick Up':
+                                        $badge_class .= 'purple';
+                                        $icon = '<i class="fas fa-box me-1"></i>';
+                                        break;
+                                    case 'Approved':
+                                        $badge_class .= 'info';
+                                        $icon = '<i class="fas fa-check-circle me-1"></i>';
                                         break;
                                     case 'Delivered':
                                         $badge_class .= 'success';
+                                        $icon = '<i class="fas fa-check-double me-1"></i>';
+                                        break;
+                                    case 'Cancelled':
+                                        $badge_class .= 'danger';
+                                        $icon = '<i class="fas fa-times-circle me-1"></i>';
                                         break;
                                     default:
                                         $badge_class .= 'secondary';
+                                        $icon = '<i class="fas fa-question-circle me-1"></i>';
                                 }
-                                echo "<span class='$badge_class'>$status</span>";
+                                echo "<span class='$badge_class'>$icon$status</span>";
                                 ?>
                             </td>
                             <td class="align-middle">
                                 <div class="progress" style="height: 5px;">
                                     <?php
                                     $progress = 0;
-                                    $progress_color = 'bg-success'; // Default color
+                                    $progress_color = 'bg-secondary';
                                     switch($status) {
                                         case 'Processing': 
-                                            $progress = 45; 
+                                            $progress = 25; 
                                             $progress_color = 'bg-warning';
                                             break;
                                         case 'In Transit': 
+                                            $progress = 50;
+                                            $progress_color = 'bg-primary';
+                                            break;
+                                        case 'Out for Delivery': 
                                             $progress = 75;
                                             $progress_color = 'bg-info';
                                             break;
                                         case 'Ready to Pick Up': 
                                             $progress = 85;
-                                            $progress_color = 'bg-primary';
+                                            $progress_color = 'bg-purple';
                                             break;
                                         case 'Approved': 
                                             $progress = 90;
@@ -136,6 +171,10 @@ if(isset($_POST['update_status'])) {
                                         case 'Delivered': 
                                             $progress = 100;
                                             $progress_color = 'bg-success';
+                                            break;
+                                        case 'Cancelled':
+                                            $progress = 100;
+                                            $progress_color = 'bg-danger';
                                             break;
                                     }
                                     ?>
@@ -203,11 +242,84 @@ if(isset($_POST['update_status'])) {
 .badge {
     padding: 8px 12px;
     font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 130px;  /* Add fixed minimum width */
+    justify-content: center; /* Center the content */
+    text-align: center; /* Center text */
 }
 
 .progress {
     margin-top: 5px;
     margin-bottom: 5px;
+}
+
+.badge-purple {
+    background-color: #6f42c1;
+    color: white;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge i {
+    margin-right: 4px;
+}
+
+.me-1 {
+    margin-right: 0.25rem !important;
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.status-legend {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.status-legend h6 {
+    color: #495057;
+}
+
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.status-legend .badge {
+    margin-right: 10px;
 }
 </style>
 

@@ -187,7 +187,48 @@ if(!isset($_SESSION['username'])) {
                                             <td>₱<?php echo number_format($row['total_amount'], 2); ?></td>
                                             <td><?php echo date('M d, Y h:i A', strtotime($row['order_date'])); ?></td>
                                             <td>
-                                                <span class="badge badge-<?php echo $row['status'] === 'Processing' ? 'primary' : 'success'; ?>">
+                                                <span class="badge badge-<?php 
+                                                    switch($row['status']) {
+                                                        case 'Processing':
+                                                            echo 'warning';
+                                                            break;
+                                                        case 'In Transit':
+                                                            echo 'info';
+                                                            break;
+                                                        case 'Ready to Pick Up':
+                                                            echo 'purple';
+                                                            break;
+                                                        case 'Approved':
+                                                            echo 'success';
+                                                            break;
+                                                        case 'Delivered':
+                                                            echo 'primary';
+                                                            break;
+                                                        default:
+                                                            echo 'secondary';
+                                                    }
+                                                ?>">
+                                                    <i class="fa <?php 
+                                                        switch($row['status']) {
+                                                            case 'Processing':
+                                                                echo 'fa-clock-o';
+                                                                break;
+                                                            case 'In Transit':
+                                                                echo 'fa-truck';
+                                                                break;
+                                                            case 'Ready to Pick Up':
+                                                                echo 'fa-box';
+                                                                break;
+                                                            case 'Approved':
+                                                                echo 'fa-check';
+                                                                break;
+                                                            case 'Delivered':
+                                                                echo 'fa-check-circle';
+                                                                break;
+                                                            default:
+                                                                echo 'fa-circle';
+                                                        }
+                                                    ?>"></i>
                                                     <?php echo $row['status']; ?>
                                                 </span>
                                             </td>
@@ -226,6 +267,43 @@ if(!isset($_SESSION['username'])) {
                                 ?>
                             </tbody>
                         </table>
+
+                        <!-- Add status legend -->
+                        <div class="status-legend">
+                            <h5>Status Legend:</h5>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <span class="badge badge-warning">
+                                        <i class="fa fa-clock-o"></i> Processing
+                                    </span>
+                                    <small>Order is being processed</small>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="badge badge-info">
+                                        <i class="fa fa-truck"></i> In Transit
+                                    </span>
+                                    <small>Order is out for delivery</small>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="badge badge-purple">
+                                        <i class="fa fa-box"></i> Ready to Pick Up
+                                    </span>
+                                    <small>Order can be picked up</small>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="badge badge-success">
+                                        <i class="fa fa-check"></i> Approved
+                                    </span>
+                                    <small>Order has been approved</small>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="badge badge-primary">
+                                        <i class="fa fa-check-circle"></i> Delivered
+                                    </span>
+                                    <small>Order has been delivered</small>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Entries info and pagination - now inside table container -->
                         <div style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;">
@@ -508,10 +586,117 @@ select.form-control-sm {
 }
 
 /* Optional: Style different status options with colors */
-select.form-control-sm option[value="Processing"] { color: #ffc107; }
-select.form-control-sm option[value="In Transit"] { color: #17a2b8; }
-select.form-control-sm option[value="Ready to Pick Up"] { color: #6610f2; }
-select.form-control-sm option[value="Approved"] { color: #28a745; }
-select.form-control-sm option[value="Delivered"] { color: #007bff; }
+select.form-control-sm option[value="Processing"] { color: #000; background-color: #ffc107; }
+select.form-control-sm option[value="In Transit"] { color: #fff; background-color: #17a2b8; }
+select.form-control-sm option[value="Ready to Pick Up"] { color: #fff; background-color: #6f42c1; }
+select.form-control-sm option[value="Approved"] { color: #fff; background-color: #28a745; }
+select.form-control-sm option[value="Delivered"] { color: #fff; background-color: #007bff; }
+</style>
+
+<style>
+/* Badge styling with new colors */
+.badge {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 130px;  /* Add fixed minimum width */
+    justify-content: center; /* Center the content */
+    text-align: center; /* Center text */
+}
+
+.badge i {
+    font-size: 1em;
+}
+
+.badge-warning { 
+    background-color: #ffc107; 
+    color: #000;
+}
+
+.badge-info { 
+    background-color: #17a2b8; 
+    color: #fff;
+}
+
+.badge-purple { 
+    background-color: #6f42c1; 
+    color: #fff;
+}
+
+.badge-success { 
+    background-color: #28a745; 
+    color: #fff;
+}
+
+.badge-primary { 
+    background-color: #007bff; 
+    color: #fff;
+}
+
+.badge-secondary { 
+    background-color: #6c757d; 
+    color: #fff;
+}
+
+/* Status dropdown styling with matching colors */
+select.form-control-sm option[value="Processing"] { 
+    color: #000;
+    background-color: #ffc107;
+}
+select.form-control-sm option[value="In Transit"] { 
+    color: #fff;
+    background-color: #17a2b8;
+}
+select.form-control-sm option[value="Ready to Pick Up"] { 
+    color: #fff;
+    background-color: #6f42c1;
+}
+select.form-control-sm option[value="Approved"] { 
+    color: #fff;
+    background-color: #28a745;
+}
+select.form-control-sm option[value="Delivered"] { 
+    color: #fff;
+    background-color: #007bff;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.status-legend {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.status-legend h5 {
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.legend-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-item .badge {
+    margin-right: 5px;
+}
+
+.legend-item small {
+    color: #666;
+    font-size: 0.85em;
+}
 </style>
 

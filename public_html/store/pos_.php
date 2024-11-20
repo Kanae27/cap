@@ -153,6 +153,10 @@
 
 .pagination-numbers {
     display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 5px 0;
 }
 
 .paginate_button {
@@ -164,6 +168,8 @@
     text-decoration: none;
     border-radius: 3px;
     font-size: 13px;
+    min-width: 30px;
+    text-align: center;
 }
 
 .paginate_button.current {
@@ -241,8 +247,8 @@ div {
             <?php
             include('../connect.php');
             // Pagination setup
-            $items_per_page = 10;
-            $page = isset($_GET['page']) ? $_GET['page'] : 1;
+            $items_per_page = 12;
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $offset = ($page - 1) * $items_per_page;
 
             // Get total count
@@ -251,6 +257,13 @@ div {
             $count_row = mysqli_fetch_assoc($count_result);
             $total_records = $count_row['total'];
             $total_pages = ceil($total_records / $items_per_page);
+
+            // Ensure current page is within valid range
+            if ($page < 1) $page = 1;
+            if ($page > $total_pages) $page = $total_pages;
+            
+            // Recalculate offset after page validation
+            $offset = ($page - 1) * $items_per_page;
 
             // Main query with LIMIT
             $result = $conn->query("SELECT * FROM product WHERE quantity > 0 ORDER BY item LIMIT $items_per_page OFFSET $offset");
@@ -292,23 +305,25 @@ div {
             <!-- Pagination -->
             <div style="float: right;">
                 <div class="pagination-numbers">
-                    <?php if ($page > 1): ?>
-                        <a onclick="loadPage(<?php echo ($page-1); ?>)" class="paginate_button">Previous</a>
-                    <?php endif; ?>
+                    <?php if ($total_pages > 1): ?>
+                        <?php if ($page > 1): ?>
+                            <a onclick="loadPage(1)" class="paginate_button">First</a>
+                            <a onclick="loadPage(<?php echo ($page-1); ?>)" class="paginate_button">Previous</a>
+                        <?php endif; ?>
 
-                    <?php
-                    $start_page = max(1, $page - 2);
-                    $end_page = min($total_pages, $page + 2);
+                        <?php
+                        // Show all page numbers
+                        for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <a onclick="loadPage(<?php echo $i; ?>)" 
+                               class="paginate_button <?php echo ($i == $page) ? 'current' : ''; ?>">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endfor; ?>
 
-                    for ($i = $start_page; $i <= $end_page; $i++): ?>
-                        <a onclick="loadPage(<?php echo $i; ?>)" 
-                           class="paginate_button <?php echo ($i == $page) ? 'current' : ''; ?>">
-                            <?php echo $i; ?>
-                        </a>
-                    <?php endfor; ?>
-
-                    <?php if ($page < $total_pages): ?>
-                        <a onclick="loadPage(<?php echo ($page+1); ?>)" class="paginate_button">Next</a>
+                        <?php if ($page < $total_pages): ?>
+                            <a onclick="loadPage(<?php echo ($page+1); ?>)" class="paginate_button">Next</a>
+                            <a onclick="loadPage(<?php echo $total_pages; ?>)" class="paginate_button">Last</a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>

@@ -101,12 +101,18 @@ window.onclick = function(event) {
 }
 </script>
 <!-- Footer Start -->
-<footer class="bg-dark text-light py-2">
+<style>
+    .bg-dark-green {
+        background-color: #006400 !important; /* Dark green color */
+    }
+</style>
+
+<footer class="bg-dark-green text-white py-2">
     <div class="container">
         <div class="row text-center">
             <!-- About Us Section -->
             <div class="col-md-12 mb-2">
-                <h5 class="text-primary mb-2">About Us</h5>
+                <h5 class="text-white mb-2">About Us</h5>
                 <p class="small">Our store was established way back in 2010<br>
                 We provide fresh vegetables and quality goods.<br>
                 And offer convenience to our customers.</p>
@@ -116,7 +122,7 @@ window.onclick = function(event) {
         <div class="row text-center">
             <!-- Location Section -->
             <div class="col-md-4 mb-2">
-                <h5 class="text-primary mb-2">Location</h5>
+                <h5 class="text-white mb-2">Location</h5>
                 <address class="small">
                     <i class="fa fa-map-marker-alt mr-2" aria-hidden="true"></i>
                     Rizal Street, Lipa City, Batangas<br>
@@ -126,15 +132,15 @@ window.onclick = function(event) {
 
             <!-- Connect with Us Section -->
             <div class="col-md-4 mb-2">
-                <h5 class="text-primary mb-2">Connect with Us</h5>
+                <h5 class="text-white mb-2">Connect with Us</h5>
                 <div class="mb-3">
-                    <a href="#" class="text-light me-2" aria-label="Facebook">
+                    <a href="#" class="text-white me-2" aria-label="Facebook">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="#" class="text-light me-2" aria-label="Twitter">
+                    <a href="#" class="text-white me-2" aria-label="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="#" class="text-light me-2" aria-label="Instagram">
+                    <a href="#" class="text-white me-2" aria-label="Instagram">
                         <i class="fab fa-instagram"></i>
                     </a>
                 </div>
@@ -146,7 +152,7 @@ window.onclick = function(event) {
 
             <!-- Store Hours Section -->
             <div class="col-md-4 mb-2">
-                <h5 class="text-primary mb-2">Store Hours</h5>
+                <h5 class="text-white mb-2">Store Hours</h5>
                 <p class="small">Monday - Sunday: 3:30 AM - 5:00 PM</p>
             </div>
         </div>
@@ -154,21 +160,21 @@ window.onclick = function(event) {
         <!-- FAQs Section -->
         <div class="row text-center">
             <div class="col-md-12 mb-4">
-                <h5 class="text-primary mb-3">Frequently Asked Questions</h5>
+                <h5 class="text-white mb-3">Frequently Asked Questions</h5>
                 <div class="small">
                     <!-- FAQ Questions -->
                     <p>
-                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer1')">Q: What products do you offer?</a></strong>
+                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer1')" class="text-white">Q: What products do you offer?</a></strong>
                     </p>
                     <p id="answer1" class="faq-answer" style="display:none;">A: We offer a variety of fresh vegetables and quality goods.</p>
                     
                     <p>
-                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer2')">Q: How do I place an order?</a></strong>
+                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer2')" class="text-white">Q: How do I place an order?</a></strong>
                     </p>
                     <p id="answer2" class="faq-answer" style="display:none;">A: You can place an order by browsing products, adding them to your cart, <br>and proceeding to checkout to complete the payment.</p>
                     
                     <p>
-                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer3')">Q: Do you offer delivery services?</a></strong>
+                        <strong><a href="javascript:void(0);" onclick="toggleAnswer('answer3')" class="text-white">Q: Do you offer delivery services?</a></strong>
                     </p>
                     <p id="answer3" class="faq-answer" style="display:none;">A: Yes, we provide delivery services for your convenience.</p>
 
